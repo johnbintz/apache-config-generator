@@ -1,10 +1,12 @@
 require 'apache/master'
+require 'apache/permissions'
 
 module Apache
   class Config
     class << self
       include Apache::Master
       include Apache::Quoteize
+      include Apache::Permissions
 
       def build(target, &block)
         @config = []

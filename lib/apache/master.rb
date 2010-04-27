@@ -59,16 +59,6 @@ module Apache
       group! group if group
     end
 
-    def deny_from_all
-      order! "deny,allow"
-      deny! "from all"
-    end
-
-    def allow_from_all
-      order! "allow,deny"
-      allow! "from all"
-    end
-
     def passenger(ruby_root, ruby_version, passenger_version)
     end
 

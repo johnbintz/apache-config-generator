@@ -1,3 +1,5 @@
+IPS = [ '127.0.0.1:80', '127.0.0.1:81' ]
+
 Apache::Config.build('httpd.conf') do
   server_root '/var/html/apache'
 
@@ -17,7 +19,7 @@ Apache::Config.build('httpd.conf') do
     deny_from_all
   end
 
-  virtual_host '127.0.0.1:80', '127.0.0.1:81' do
+  virtual_host *IPS do
     directory '/' do
       allow_from_all
     end
