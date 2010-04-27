@@ -6,8 +6,8 @@ module Apache
   end
 
   module Master
-    def modules(&block)
-      @config << Modules.build(&block)
+    def modules(*modules, &block)
+      @config << Modules.build(*modules, &block)
     end
 
     def indent(string)
@@ -17,40 +17,59 @@ module Apache
     def block_methods(*methods)
       methods.each do |method|
         self.class.class_eval <<-EOT
-          def #{method}(name = nil, &block)
-            tag_name = apachify("#{method}")
-            start = [ tag_name ]
-            start << '"' + name + '"' if name
-            start = start.uniq.join(' ')
-
-            @config << "" if (@indent == 0)
-            @config << indent("<" + start + ">")
-            @indent += 1
-            self.instance_eval(&block)
-            @indent -= 1
-            @config << indent("</" + tag_name + ">")
+          def #{method}(*name, &block)
+            blockify(apachify("#{method}"), name, &block)
           end
         EOT
       end
     end
 
+    def blockify(tag_name, name, &block)
+      start = [ tag_name ]
+
+      case name
+        when String
+          start << quoteize(name).first if name
+        when Array
+          start << (quoteize(*name) * " ") if name
+      end
+
+      start = start.uniq.join(' ')
+
+      @config << "" if (@indent == 0)
+      @config << indent("<" + start + ">")
+      @indent += 1
+      self.instance_eval(&block)
+      @indent -= 1
+      @config << indent("</" + tag_name + ">")
+    end
+
     def method_missing(method, *args)
-      @config << indent([ apachify(method), *quoteize(*args) ] * ' ')
+      if method.to_s[-1..-1] == "!"
+        method = method.to_s[0..-2].to_sym
+      else
+        args = *quoteize(*args)
+      end
+
+      @config << indent([ apachify(method), *args ] * ' ')
     end
 
     def runner(user, group = nil)
-      @config << indent("User #{user}")
-      @config << indent("Group #{group}") if group
+      user! user
+      group! group if group
     end
 
     def deny_from_all
-      @config << indent("Order deny,allow")
-      @config << indent("Deny from all")
+      order! "deny,allow"
+      deny! "from all"
     end
 
     def allow_from_all
-      @config << indent("Order allow,deny")
-      @config << indent("Allow from all")
+      order! "allow,deny"
+      allow! "from all"
+    end
+
+    def passenger(ruby_root, ruby_version, passenger_version)
     end
 
     private
@@ -68,10 +87,11 @@ module Apache
     class << self
       include Apache::Quoteize
 
-      def build(&block)
+      def build(*modules, &block)
         @modules = []
 
-        self.instance_eval(&block)
+        modules.each { |m| self.send(m) }
+        self.instance_eval(&block) if block
 
         @modules
       end
