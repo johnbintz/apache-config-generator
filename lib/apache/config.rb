@@ -18,6 +18,14 @@ module Apache
 
         #File.open(target, 'w') { |f| f.puts @config * "\n" }
       end
+
+      def indent(string)
+        " " * (@indent * 2) + string
+      end
+
+      def <<(string)
+        @config << indent(string)
+      end
     end
 
     block_methods :if_module, :directory, :virtual_host

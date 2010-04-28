@@ -1,17 +1,20 @@
 module Apache
   module Quoteize
     def quoteize(*args)
-      args.collect { |a| %{"#{a}"} }
+      args.collect do |arg|
+        case arg
+          when Symbol
+            arg.to_s.gsub('_', ' ')
+          else
+            %{"#{arg}"}
+        end
+      end
     end
   end
 
   module Master
     def modules(*modules, &block)
       @config << Modules.build(*modules, &block)
-    end
-
-    def indent(string)
-      " " * (@indent * 2) + string
     end
 
     def block_methods(*methods)
@@ -36,12 +39,12 @@ module Apache
 
       start = start.uniq.join(' ')
 
-      @config << "" if (@indent == 0)
-      @config << indent("<" + start + ">")
+      self << "" if (@indent == 0)
+      self << "<" + start + ">"
       @indent += 1
       self.instance_eval(&block)
       @indent -= 1
-      @config << indent("</" + tag_name + ">")
+      self << "</" + tag_name + ">"
     end
 
     def method_missing(method, *args)
@@ -51,7 +54,7 @@ module Apache
         args = *quoteize(*args)
       end
 
-      @config << indent([ apachify(method), *args ] * ' ')
+      self << [ apachify(method), *args ] * ' '
     end
 
     def runner(user, group = nil)
@@ -60,7 +63,14 @@ module Apache
     end
 
     def passenger(ruby_root, ruby_version, passenger_version)
+
     end
+
+    def order(*args)
+      self << "Order #{args * ','}"
+    end
+
+    alias :order! :order
 
     private
       def apachify(name)
