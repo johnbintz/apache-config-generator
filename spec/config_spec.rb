@@ -40,5 +40,11 @@ describe Apache::Config, "should handle the basics of Apache config" do
     Apache::Config.blockify("Tag", [ 'part', 'part2' ]) do
       something "goes here"
     end.should == ['<Tag "part" "part2">', '  Something "goes here"', '</Tag>']
+
+    Apache::Config.reset!
+
+    Apache::Config.blockify("Tag", 'part') do
+      something "goes here"
+    end.should == ['<Tag "part">', '  Something "goes here"', '</Tag>']
   end
 end
