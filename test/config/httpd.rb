@@ -23,5 +23,7 @@ Apache::Config.build('httpd.conf') do
     directory '/' do
       allow_from_all
     end
+    
+    
   end
 end
