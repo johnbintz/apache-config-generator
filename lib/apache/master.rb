@@ -1,7 +1,7 @@
 module Apache
   module Master
     def modules(*modules, &block)
-      @config << Modules.build(*modules, &block)
+      @config += Modules.build(*modules, &block)
     end
 
     def runner(user, group = nil)

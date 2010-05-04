@@ -47,4 +47,14 @@ describe Apache::Config, "should handle the basics of Apache config" do
       something "goes here"
     end.should == ['<Tag "part">', '  Something "goes here"', '</Tag>']
   end
+
+  it "should handle a build" do
+    Apache::Config.build do
+      my_test "this"
+    end
+
+    Apache::Config.config.should == [
+      'MyTest "this"'
+    ]
+  end
 end

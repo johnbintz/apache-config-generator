@@ -5,8 +5,14 @@ module Apache
     class << self
       include Apache::Quoteize
 
-      def build(*modules, &block)
+      attr_accessor :modules
+
+      def reset!
         @modules = []
+      end
+
+      def build(*modules, &block)
+        reset!
 
         modules.each { |m| self.send(m) }
         self.instance_eval(&block) if block

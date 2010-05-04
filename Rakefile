@@ -17,6 +17,7 @@ namespace :spec do
   Spec::Rake::SpecTask.new('rcov') do |t|
     t.spec_files = FileList['spec/*.rb']
     t.rcov = true
-    t.rcov_opts = ['--exclude', 'spec']
+    t.rcov_opts = ['--exclude', 'spec', '--exclude', 'gems']
+    t.spec_opts = ['-b']
   end
 end

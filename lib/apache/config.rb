@@ -9,12 +9,10 @@ module Apache
       include Apache::Quoteize
       include Apache::Permissions
 
-      def build(target, &block)
+      def build(target = nil, &block)
         reset!
 
         self.instance_eval(&block)
-
-        puts @config * "\n"
       end
 
       # Reset the current settings
