@@ -8,11 +8,17 @@ module Apache
       include Apache::Master
       include Apache::Quoteize
       include Apache::Permissions
+      include Apache::Directories
+      include Apache::Logging
 
       def build(target = nil, &block)
         reset!
 
         self.instance_eval(&block)
+
+        File.open(target, 'w') { |f| f.puts @config * "\n" } if target
+
+        @config
       end
 
       # Reset the current settings
@@ -35,7 +41,7 @@ module Apache
       #
       # Split the provided name on underscores and capitalize the individual parts
       def apachify(name)
-        name.to_s.split("_").collect(&:capitalize).join
+        name.to_s.split("_").collect(&:capitalize).join.gsub('Ssl', 'SSL')
       end
 
       # Handle options that aren't specially handled
@@ -60,28 +66,57 @@ module Apache
         end
       end
 
+      def if_module(mod, &block)
+        blockify(apachify('if_module'), "#{mod}_module".to_sym, &block)
+      end
+
+      def directory(dir, &block)
+        directory? dir
+        blockify(apachify('directory'), dir, &block)
+      end
+
       # Handle the blockification of a provided block
       def blockify(tag_name, name, &block)
         start = [ tag_name ]
 
         case name
           when String
-            start << quoteize(name).first if name
+            start << quoteize(name).first
           when Array
-            start << (quoteize(*name) * " ") if name
+            start << (quoteize(*name) * " ")
+          when Symbol
+            start << name.to_s
         end
 
         start = start.join(' ')
 
-        self << "" if (@indent == 0)
+        self << "" if (@line_indent == 0)
         self << "<#{start}>"
         @line_indent += 1
         self.instance_eval(&block)
         @line_indent -= 1
         self << "</#{tag_name}>"
       end
+
+      def apache_include(*opts)
+        self << "Include #{opts * " "}"
+      end
+
+      private
+        def writable?(path)
+          if !File.directory? File.split(path).first
+            puts "[warn] #{path} may not be writable!"
+          end
+        end
+
+        def directory?(path)
+          if !File.directory? path
+            puts "[warn] #{path} does not exist!"
+          end
+        end
+
     end
 
-    block_methods :if_module, :directory, :virtual_host
+    block_methods :virtual_host, :files_match
   end
 end

@@ -29,6 +29,7 @@ describe Apache::Config, "should handle the basics of Apache config" do
   it "should Apachify the name" do
     Apache::Config.apachify("test").should == "Test"
     Apache::Config.apachify("test_full_name").should == "TestFullName"
+    Apache::Config.apachify("ssl_option").should == "SSLOption"
   end
 
   it "should quoteize properly" do
@@ -39,13 +40,13 @@ describe Apache::Config, "should handle the basics of Apache config" do
   it "should blockify a block" do
     Apache::Config.blockify("Tag", [ 'part', 'part2' ]) do
       something "goes here"
-    end.should == ['<Tag "part" "part2">', '  Something "goes here"', '</Tag>']
+    end.should == ['', '<Tag "part" "part2">', '  Something "goes here"', '</Tag>']
 
     Apache::Config.reset!
 
     Apache::Config.blockify("Tag", 'part') do
       something "goes here"
-    end.should == ['<Tag "part">', '  Something "goes here"', '</Tag>']
+    end.should == ['', '<Tag "part">', '  Something "goes here"', '</Tag>']
   end
 
   it "should handle a build" do

@@ -15,9 +15,11 @@ describe Apache::Modules, "should build a list of modules" do
     Apache::Modules.build(:this, :that) do
       mine "my_path"
     end.should == [
+      '',
       'LoadModule "this_module" "modules/mod_this.so"',
       'LoadModule "that_module" "modules/mod_that.so"',
-      'LoadModule "mine_module" "my_path"'
+      'LoadModule "mine_module" "my_path"',
+      ''
     ]
   end
 end

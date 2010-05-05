@@ -17,7 +17,7 @@ module Apache
         modules.each { |m| self.send(m) }
         self.instance_eval(&block) if block
 
-        @modules
+        [ '' ] + @modules + [ '' ]
       end
 
       def method_missing(method, *args)

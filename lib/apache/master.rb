@@ -15,10 +15,13 @@ module Apache
       passenger_ruby "#{ruby_root}/bin/ruby"
     end
 
-    def order(*args)
-      self << "Order #{args * ','}"
+    def enable_gzip!
+      directory '/' do
+        add_output_filter_by_type! :DEFLATE, 'text/html', 'text/plain', 'text/css', 'text/javascript', 'application/javascript'
+        browser_match! '^Mozilla/4', "gzip-only-text/html"
+        browser_match! '^Mozilla/4\.0[678]', "no-gzip"
+        browser_match! '\bMSIE', '!no-gzip', '!gzip-only-text/html'
+      end
     end
-
-    alias :order! :order
   end
 end
