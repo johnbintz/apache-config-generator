@@ -59,7 +59,7 @@ module Apache
       def apachify(name)
         case name
           when String, Symbol
-            name.to_s.split("_").collect(&:capitalize).join.gsub('Ssl', 'SSL')
+            name.to_s.split("_").collect(&:capitalize).join.gsub('Ssl', 'SSL').gsub('Cgi', 'CGI')
           when Array
             name.collect { |n| apachify(n) }
         end

@@ -30,6 +30,7 @@ describe Apache::Config, "should handle the basics of Apache config" do
     Apache::Config.apachify("test").should == "Test"
     Apache::Config.apachify("test_full_name").should == "TestFullName"
     Apache::Config.apachify("ssl_option").should == "SSLOption"
+    Apache::Config.apachify("exec_cgi").should == "ExecCGI"
   end
 
   it "should quoteize properly" do
