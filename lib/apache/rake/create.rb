@@ -13,6 +13,8 @@ namespace :apache do
     CONFIG['source_path'] = File.expand_path(CONFIG['source'])
     CONFIG['dest_path'] = File.expand_path(CONFIG['destination'])
 
+    Apache::Config.rotate_logs_path = CONFIG['rotate_logs_path']
+
     FileUtils.mkdir_p CONFIG['dest_path']
     Dir.chdir CONFIG['dest_path']
 

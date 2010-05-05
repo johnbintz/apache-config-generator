@@ -10,6 +10,10 @@ module Apache
       allow :from_all
     end
 
+    def allow_from(where)
+      allow "from_#{where}".to_sym
+    end
+
     def order(*args)
       self << "Order #{args * ','}"
     end

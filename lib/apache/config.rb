@@ -1,22 +1,29 @@
+require 'fileutils'
+
 Dir[File.join(File.dirname(__FILE__), '*.rb')].each { |f| require f }
 
 module Apache
   class Config
     class << self
-      attr_accessor :line_indent, :config
+      attr_accessor :line_indent, :config, :rotate_logs_path
 
       include Apache::Master
       include Apache::Quoteize
       include Apache::Permissions
       include Apache::Directories
       include Apache::Logging
+      include Apache::Performance
+      include Apache::Rewrites
 
       def build(target = nil, &block)
         reset!
 
         self.instance_eval(&block)
 
-        File.open(target, 'w') { |f| f.puts @config * "\n" } if target
+        if target
+          FileUtils.mkdir_p File.split(target).first
+          File.open(target, 'w') { |f| f.puts @config * "\n" }
+        end
 
         @config
       end
@@ -28,8 +35,13 @@ module Apache
       end
 
       # Indent the string by the current @line_indent level
-      def indent(string)
-        " " * (@line_indent * 2) + string
+      def indent(string_or_array)
+        case string_or_array
+          when Array
+            string_or_array.collect { |s| indent(s) }
+          else
+            " " * (@line_indent * 2) + string_or_array.to_s
+        end
       end
 
       # Add the string to the current config
@@ -37,11 +49,20 @@ module Apache
         @config << indent(string)
       end
 
+      def +(other)
+        @config += other
+      end
+
       # Apachify a string
       #
       # Split the provided name on underscores and capitalize the individual parts
       def apachify(name)
-        name.to_s.split("_").collect(&:capitalize).join.gsub('Ssl', 'SSL')
+        case name
+          when String, Symbol
+            name.to_s.split("_").collect(&:capitalize).join.gsub('Ssl', 'SSL')
+          when Array
+            name.collect { |n| apachify(n) }
+        end
       end
 
       # Handle options that aren't specially handled
@@ -75,6 +96,10 @@ module Apache
         blockify(apachify('directory'), dir, &block)
       end
 
+      def if_environment(env, &block)
+        self.instance_eval(&block) if APACHE_ENV == env
+      end
+
       # Handle the blockification of a provided block
       def blockify(tag_name, name, &block)
         start = [ tag_name ]
@@ -102,6 +127,10 @@ module Apache
         self << "Include #{opts * " "}"
       end
 
+      def rotatelogs(path, time)
+        "|#{@rotate_logs_path} #{path} #{time}"
+      end
+
       private
         def writable?(path)
           if !File.directory? File.split(path).first
@@ -117,6 +146,6 @@ module Apache
 
     end
 
-    block_methods :virtual_host, :files_match
+    block_methods :virtual_host, :files_match, :location
   end
 end

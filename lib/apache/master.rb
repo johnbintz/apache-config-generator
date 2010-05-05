@@ -23,5 +23,28 @@ module Apache
         browser_match! '\bMSIE', '!no-gzip', '!gzip-only-text/html'
       end
     end
+
+    def timeout(t)
+      self << "Timeout #{t}"
+    end
+
+    def comment(c)
+      out = [ '' ]
+      case c
+        when String
+          out += c.split("\n")
+        when Array
+          out = c
+      end
+      out << ''
+      self + out.collect { |line| "# #{line.strip}" }
+    end
+
+    def script_alias(uri, path)
+      directory? path
+      self << %{ScriptAlias "#{uri}" "#{path}"}
+    end
+
+    alias :script_alias! :script_alias
   end
 end
