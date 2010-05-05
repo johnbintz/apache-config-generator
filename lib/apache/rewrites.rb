@@ -13,6 +13,10 @@ module Apache
     def rewrites(&block)
       self + indent(RewriteManager.build(&block))
     end
+
+    def r301(*opt)
+      self << "Redirect permanent #{quoteize(*opt) * " "}"
+    end
   end
 
   class RewriteManager
@@ -34,6 +38,13 @@ module Apache
         @rewrites << @rewrite
       end
 
+      def r301(*opts)
+        redirect = RedirectMatchPermanent.new
+        redirect.rule(*opts)
+
+        @rewrites << redirect
+      end
+
       def rewrite_test(from, to, opts = {})
         orig_from = from.dup
         @rewrites.each do |r|
@@ -48,7 +59,9 @@ module Apache
     end
   end
 
-  class RewriteRule
+  class MatchableThing
+    def tag; raise 'Override this method'; end
+
     def initialize
       @from = nil
       @to = nil
@@ -77,9 +90,17 @@ module Apache
 
       end
 
-      output << "RewriteRule #{[@from.source, @to, @options].flatten * " "}"
+      output << "#{tag} #{[@from.source, @to, @options].flatten * " "}"
 
       output * "\n"
     end
+end
+
+  class RewriteRule < MatchableThing
+    def tag; 'RewriteRule'; end
+  end
+
+  class RedirectMatchPermanent < MatchableThing
+    def tag; 'RedirectMatch permanent'; end
   end
 end

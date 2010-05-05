@@ -127,8 +127,25 @@ module Apache
         self << "Include #{opts * " "}"
       end
 
+      def apache_alias(*opts)
+        self << "Alias #{quoteize(*opts) * " "}"
+      end
+
       def rotatelogs(path, time)
         "|#{@rotate_logs_path} #{path} #{time}"
+      end
+
+      def set_header(hash)
+        hash.each do |key, value|
+          output = "Header set #{quoteize(key)}"
+          case value
+            when String
+              output += " #{quoteize(value)}"
+            when Array
+              output += " #{quoteize(value.first)} #{value.last}"
+          end
+          self << output
+        end
       end
 
       private
