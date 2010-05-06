@@ -1,0 +1,4 @@
+require 'rubygems'
+
+require 'apache-config-generator'
+require 'apache/rake/create'

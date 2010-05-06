@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+
+if File.directory? ARGV[0]
+	puts "You can't overwrite an existing directory."
+	exit 1
+end
+
+FileUtils.cp_r File.expand_path(File.join(File.dirname(__FILE__), '..', 'skel')), ARGV[0]
+FileUtils.mkdir_p File.join(ARGV[0], 'source')
+FileUtils.mkdir_p File.join(ARGV[0], 'conf.d')
