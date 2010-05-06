@@ -34,5 +34,29 @@ module Apache
     end
 
     alias :order! :order
+
+    def basic_authentication(zone, users_file, requires)
+      auth_type :basic
+      auth_name zone
+      auth_user_file users_file
+      requires.each do |type, values|
+        apache_require type, *values
+      end
+    end
+
+    def ldap_authentication(zone, url, requires)
+      auth_type :basic
+      auth_name zone
+      auth_basic_provider :ldap
+      authz_ldap_authoritative :on
+      auth_ldap_url url
+      requires.each do |type, values|
+        apache_require type, *values
+      end
+    end
+
+    def apache_require(*opts)
+      self << "Require #{opts * " "}"
+    end
   end
 end

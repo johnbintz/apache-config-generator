@@ -1,6 +1,7 @@
 module Apache
   module Rewrites
     def enable_rewrite_engine(options)
+      self << ''
       rewrite_engine! :on
       options.each do |option, value|
         case option
@@ -8,10 +9,12 @@ module Apache
             rewrite_log_level! value
         end
       end
+      self << ''
     end
 
     def rewrites(&block)
       self + indent(RewriteManager.build(&block))
+      self << ''
     end
 
     def r301(*opt)
