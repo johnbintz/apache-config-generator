@@ -63,4 +63,22 @@ describe Apache::Master, "should provide basic helpers for configuration" do
     apache.comment(["This is", "a comment"])
     apache.to_a.should == [ '#', '# This is', '# a comment', '#' ]
   end
+
+  it "should create & check a script alias" do
+    dir = File.dirname(__FILE__)
+
+    apache.script_alias '/script/', dir
+    apache.to_a.should == [ %{ScriptAlias "/script/" "#{dir}"} ]
+  end
+
+  it "should add a type with some other options" do
+    apache.add_type! 'text/html', '.html', :handler => 'html-handler'
+    apache.to_a.should == [ 'AddType text/html .html', 'AddHandler html-handler .html' ]
+  end
+
+  it "should create headers" do
+    apache.set_header :test => :test2
+    apache.set_header 'test3' => [ 'test4', "test5=test6" ]
+    apache.to_a.should == [ 'Header set test test2', 'Header set "test3" "test4" test5=test6' ]
+  end
 end

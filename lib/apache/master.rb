@@ -42,7 +42,7 @@ module Apache
 
     def script_alias(uri, path)
       directory? path
-      self << %{ScriptAlias "#{uri}" "#{path}"}
+      self << %{ScriptAlias #{quoteize(uri, path) * ' '}}
     end
 
     alias :script_alias! :script_alias
@@ -66,7 +66,7 @@ module Apache
       hash.each do |key, value|
         output = "Header set #{quoteize(key)}"
         case value
-          when String
+          when String, Symbol
             output += " #{quoteize(value)}"
           when Array
             output += " #{quoteize(value.first)} #{value.last}"

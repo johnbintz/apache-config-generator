@@ -1,4 +1,5 @@
 require 'apache/config'
+require 'fileutils'
 
 describe Apache::Config, "builds configurations" do
   let(:apache) { Apache::Config }
@@ -75,7 +76,9 @@ describe Apache::Config, "builds configurations" do
   end
 
   it "should handle a build" do
-    apache.build { my_test "this" }.should == [ 'MyTest "this"' ]
+    FileUtils.mkdir_p 'test'
+    apache.build('test/fake.conf') { my_test "this" }.should == [ 'MyTest "this"' ]
+    FileUtils.rm 'test/fake.conf'
   end
 
   it "should handle building if the environment is correct" do

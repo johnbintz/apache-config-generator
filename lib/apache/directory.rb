@@ -1,11 +1,16 @@
 module Apache
   module Directories
     def options(*opt)
-      self << "Options #{apachify(opt) * " "}"
+      create_options_list('Options', *opt)
     end
 
     def index_options(*opt)
-      self << "IndexOptions #{apachify(opt) * " "}"
+      create_options_list('IndexOptions', *opt)
     end
+
+    private
+      def create_options_list(tag, *opt)
+        self << "#{tag} #{apachify(opt) * " "}"
+      end
   end
 end
