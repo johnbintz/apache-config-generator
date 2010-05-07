@@ -1,5 +1,17 @@
 module Apache
   module MPM
+    # Set up the Prefork MPM
+    #
+    # The block you pass in to this can take the following methods:
+    # * start(num) - StartServers
+    # * spares(min, max) - Min and MaxSpareServers
+    # * limit(num) - ServerLimit
+    # * clients(num) - MaxClients
+    # * max_requests(num) - MaxRequestsPerChild
+    def prefork_config(&block)
+      self + Apache::MPM::Prefork.build(&block)
+    end
+
     class Prefork
       class << self
         def build(&block)

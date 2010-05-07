@@ -11,9 +11,5 @@ module Apache
         end
       end
     end
-
-    def prefork_config(&block)
-      self + Apache::MPM::Prefork.build(&block)
-    end
   end
 end

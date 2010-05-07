@@ -5,10 +5,14 @@ module Apache
       deny :from_all
     end
 
+    alias :deny_from_all! :deny_from_all
+
     def allow_from_all
       order :allow, :deny
       allow :from_all
     end
+
+    alias :allow_from_all! :allow_from_all
 
     def allow_from(where)
       allow "from_#{where}".to_sym
@@ -36,6 +40,7 @@ module Apache
     alias :order! :order
 
     def basic_authentication(zone, users_file, requires)
+      exist? users_file
       auth_type :basic
       auth_name zone
       auth_user_file users_file
@@ -43,6 +48,8 @@ module Apache
         apache_require type, *values
       end
     end
+
+    alias :basic_authentication! :basic_authentication
 
     def ldap_authentication(zone, url, requires)
       auth_type :basic
@@ -54,6 +61,8 @@ module Apache
         apache_require type, *values
       end
     end
+
+    alias :ldap_authentication! :ldap_authentication
 
     def apache_require(*opts)
       self << "Require #{opts * " "}"

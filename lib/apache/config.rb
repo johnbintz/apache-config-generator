@@ -14,6 +14,7 @@ module Apache
       include Apache::Logging
       include Apache::Performance
       include Apache::Rewrites
+      include Apache::MPM
 
       # Build the provided configuration only if the current environment matches one of the conditions
       def build_if(target, *conditions, &block)
@@ -144,17 +145,16 @@ module Apache
 
       private
         def writable?(path)
-          if !File.directory? File.split(path).first
-            puts "[warn] #{path} may not be writable!"
-          end
+          puts "[warn] #{path} may not be writable!" if !File.directory? File.split(path).first
         end
 
         def directory?(path)
-          if !File.directory? path
-            puts "[warn] #{path} does not exist!"
-          end
+          puts "[warn] #{path} does not exist!" if !File.directory? path
         end
 
+        def exist?(path)
+          puts "[warn] #{path} does not exist!" if !File.exist?(path)
+        end
     end
 
     block_methods :virtual_host, :files_match, :location, :files
