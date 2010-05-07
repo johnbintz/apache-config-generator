@@ -34,10 +34,10 @@ module Apache
         when String
           out += c.split("\n")
         when Array
-          out = c
+          out += c
       end
       out << ''
-      self + out.collect { |line| "# #{line.strip}" }
+      self + out.collect { |line| "# #{line.strip}".strip }
     end
 
     def script_alias(uri, path)
