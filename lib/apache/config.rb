@@ -5,7 +5,7 @@ Dir[File.join(File.dirname(__FILE__), '*.rb')].each { |f| require f }
 module Apache
   class Config
     class << self
-      attr_accessor :line_indent, :config, :rotate_logs_path
+      attr_accessor :line_indent, :rotate_logs_path
 
       include Apache::Master
       include Apache::Quoteize
@@ -15,10 +15,12 @@ module Apache
       include Apache::Performance
       include Apache::Rewrites
 
+      # Build the provided configuration only if the current environment matches one of the conditions
       def build_if(target, *conditions, &block)
         build(target, &block) if conditions.include? APACHE_ENV
       end
 
+      # Build the provided configuration
       def build(target = nil, &block)
         reset!
 
@@ -53,8 +55,14 @@ module Apache
         @config << indent(string)
       end
 
+      # Append the array to the current config
       def +(other)
         @config += other
+      end
+
+      # Get the config
+      def to_a
+        @config
       end
 
       # Apachify a string
@@ -77,7 +85,7 @@ module Apache
           args = *quoteize(*args)
         end
 
-        self << [ apachify(method), *args ] * ' '
+        self << [ apachify(method), *args ].compact * ' '
       end
 
       # Handle creating block methods
@@ -108,23 +116,21 @@ module Apache
         self.instance_eval(&block) if APACHE_ENV == env
       end
 
-      # Handle the blockification of a provided block
-      def blockify(tag_name, name, &block)
-        start = [ tag_name ]
-
+      def blockify_name(name)
         case name
           when String
-            start << quoteize(name).first
+            quoteize(name).first
           when Array
-            start << (quoteize(*name) * " ")
+            (quoteize(*name) * " ")
           when Symbol
-            start << name.to_s
+            name.to_s
         end
+      end
 
-        start = start.join(' ')
-
+      # Handle the blockification of a provided block
+      def blockify(tag_name, name, &block)
         self << ""
-        self << "<#{start}>"
+        self << "<#{[ tag_name, blockify_name(name) ].compact * ' '}>"
         @line_indent += 1
         self.instance_eval(&block)
         @line_indent -= 1
@@ -132,29 +138,8 @@ module Apache
         self << ""
       end
 
-      def apache_include(*opts)
-        self << "Include #{opts * " "}"
-      end
-
-      def apache_alias(*opts)
-        self << "Alias #{quoteize(*opts) * " "}"
-      end
-
       def rotatelogs(path, time)
         "|#{@rotate_logs_path} #{path} #{time}"
-      end
-
-      def set_header(hash)
-        hash.each do |key, value|
-          output = "Header set #{quoteize(key)}"
-          case value
-            when String
-              output += " #{quoteize(value)}"
-            when Array
-              output += " #{quoteize(value.first)} #{value.last}"
-          end
-          self << output
-        end
       end
 
       private

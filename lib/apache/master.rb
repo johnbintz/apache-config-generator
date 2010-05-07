@@ -53,5 +53,26 @@ module Apache
         self << "Add#{type.to_s.capitalize} #{value} #{extension}"
       end
     end
+
+    def apache_include(*opts)
+      self << "Include #{opts * " "}"
+    end
+
+    def apache_alias(*opts)
+      self << "Alias #{quoteize(*opts) * " "}"
+    end
+
+    def set_header(hash)
+      hash.each do |key, value|
+        output = "Header set #{quoteize(key)}"
+        case value
+          when String
+            output += " #{quoteize(value)}"
+          when Array
+            output += " #{quoteize(value.first)} #{value.last}"
+        end
+        self << output
+      end
+    end
   end
 end
