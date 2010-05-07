@@ -172,6 +172,6 @@ module Apache
 
     end
 
-    block_methods :virtual_host, :files_match, :location
+    block_methods :virtual_host, :files_match, :location, :files
   end
 end

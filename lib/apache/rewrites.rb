@@ -31,14 +31,27 @@ module Apache
 
         self.instance_eval(&block)
 
-        @rewrites
+        @rewrites.collect(&:to_a).flatten
+      end
+
+      def commit!
+        @rewrites << @rewrite
+        @rewrite = nil
+      end
+
+      def ensure_rewrite!
+        @rewrite = RewriteRule.new if !@rewrite
       end
 
       def rewrite(*opts)
-        @rewrite = RewriteRule.new
+        ensure_rewrite!
         @rewrite.rule(*opts)
+        commit!
+      end
 
-        @rewrites << @rewrite
+      def cond(*opts)
+        ensure_rewrite!
+        @rewrite.cond(*opts)
       end
 
       def r301(*opts)
@@ -63,6 +76,8 @@ module Apache
   end
 
   class MatchableThing
+    include Apache::Quoteize
+
     def tag; raise 'Override this method'; end
 
     def initialize
@@ -75,7 +90,14 @@ module Apache
     def rule(from, to, *opts)
       @from = from
       @to = to
-      @options = opts
+      @options = opts.first
+    end
+
+    def cond(from, to, *opts)
+      rewrite_cond = RewriteCondition.new
+      rewrite_cond.cond(from, to, *opts)
+
+      @conditions << rewrite_cond
     end
 
     def test(from, opts)
@@ -86,18 +108,29 @@ module Apache
       from
     end
 
-    def to_s
-      output = []
+    def to_a
+      output = @conditions.collect(&:to_s)
 
-      @conditions.each do |condition|
-
+      options = @options.collect do |key, value|
+        case key
+          when :last
+            'L'
+          when :preserve_query_string
+            'QSA'
+        end
       end
 
-      output << "#{tag} #{[@from.source, @to, @options].flatten * " "}"
+      if !options.empty?
+        options = "[#{options * ','}]"
+      else
+        options = nil
+      end
 
-      output * "\n"
+      output << "#{tag} #{[quoteize(@from.source), quoteize(@to), options].compact.flatten * " "}"
+
+      output
     end
-end
+  end
 
   class RewriteRule < MatchableThing
     def tag; 'RewriteRule'; end
@@ -105,5 +138,14 @@ end
 
   class RedirectMatchPermanent < MatchableThing
     def tag; 'RedirectMatch permanent'; end
+  end
+
+  class RewriteCondition < MatchableThing
+    def tag; 'RewriteCond'; end
+    alias :cond :rule
+
+    def to_s
+      "#{tag} #{[quoteize(@from), quoteize(@to), @options].flatten * " "}"
+    end
   end
 end

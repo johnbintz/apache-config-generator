@@ -1,23 +1,15 @@
 module Apache
   module Logging
-    def error_log(*opts)
-      handle_log 'ErrorLog', opts.first, opts.first, opts[1..-1]
-    end
+    [ :custom, :error, :script, :rewrite ].each do |type|
+      class_eval <<-EOT
+        def #{type}_log(*opts)
+          handle_log '#{type.to_s.capitalize}Log', opts.first, opts.first, opts[1..-1]
+        end
 
-    def custom_log(*opts)
-      handle_log 'CustomLog', opts.first, opts.first, opts[1..-1]
-    end
-
-    def rotate_custom_log(*opts)
-      handle_log 'CustomLog', opts.first, quoteize(rotatelogs(*opts[0..1])), opts[2..-1]
-    end
-
-    def rotate_error_log(*opts)
-      handle_log 'ErrorLog', opts.first, quoteize(rotatelogs(*opts[0..1])), opts[2..-1]
-    end
-
-    def rotate_script_log(*opts)
-      handle_log 'ScriptLog', opts.first, quoteize(rotatelogs(*opts[0..1])), opts[2..-1]
+        def rotate_#{type}_log(*opts)
+          handle_log '#{type.to_s.capitalize}Log', opts.first, quoteize(rotatelogs(*opts[0..1])), opts[2..-1]
+        end
+      EOT
     end
 
     def combined_log_format(name = 'combined')

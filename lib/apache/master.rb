@@ -46,5 +46,12 @@ module Apache
     end
 
     alias :script_alias! :script_alias
+
+    def add_type!(mime, extension, options = {})
+      self << "AddType #{mime} #{extension}"
+      options.each do |type, value|
+        self << "Add#{type.to_s.capitalize} #{value} #{extension}"
+      end
+    end
   end
 end
