@@ -3,7 +3,7 @@ module Apache
     [ :custom, :error, :script, :rewrite ].each do |type|
       class_eval <<-EOT
         def #{type}_log(*opts)
-          handle_log '#{type.to_s.capitalize}Log', opts.first, opts.first, opts[1..-1]
+          handle_log '#{type.to_s.capitalize}Log', opts.first, quoteize(opts.first), opts[1..-1]
         end
 
         def rotate_#{type}_log(*opts)
