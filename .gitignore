@@ -2,5 +2,8 @@
 .project
 coverage/*
 docs/*
+pkg/*
+Manifest
+*.gemspec
 
 

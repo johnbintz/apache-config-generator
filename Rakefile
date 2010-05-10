@@ -5,9 +5,6 @@ require 'spec/rake/spectask'
 require 'sdoc'
 require 'sdoc_helpers/markdown'
 require 'echoe'
-require 'pp'
-
-pp RDoc::TopLevel
 
 namespace :apache do
   desc "Generate the configs"
@@ -16,6 +13,13 @@ namespace :apache do
       require file
     end
   end
+end
+
+Echoe.new('apache-config-generator') do |p|
+  p.author = "John Bintz"
+  p.summary = "A Ruby DSL for programmatically generating Apache configs"
+  p.ignore_pattern = [ 'spec/**/*', 'test/**/*', 'docs/**/*' ]
+  p.executable_pattern = [ 'bin/**/*' ]
 end
 
 namespace :spec do
@@ -31,6 +35,5 @@ end
 Rake::RDocTask.new do |rdoc|
   rdoc.template = 'direct'
   rdoc.rdoc_files.add('lib')
-  rdoc.main = "lib/apache/config.rb"
   rdoc.rdoc_dir = 'docs'
 end
