@@ -44,7 +44,7 @@ module Apache
 
     # Block all .ht* files
     def no_htfiles!
-      files_match %{^\.ht} do
+      files_match %r{^\.ht} do
         deny_from_all
         satisfy :all
       end
