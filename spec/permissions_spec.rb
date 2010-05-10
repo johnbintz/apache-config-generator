@@ -15,7 +15,7 @@ describe Apache::Config, "permissions" do
 
   it "should allow from somewhere" do
     apache.allow_from '1.2.3.4'
-    apache.to_a.should == [ 'Allow from 1.2.3.4' ]
+    apache.to_a.should == [ 'Allow from "1.2.3.4"' ]
   end
 
   # Verify the blob output in apache itself, just make sure the method doesn't bomb

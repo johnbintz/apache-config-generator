@@ -145,7 +145,7 @@ module Apache
           when :preserve_query_string
             'QSA'
         end
-      end
+      end.sort
 
       @options = !options.empty? ? "[#{options * ','}]" : nil
     end

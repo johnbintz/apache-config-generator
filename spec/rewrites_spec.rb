@@ -72,19 +72,19 @@ end
 describe Apache::RewriteRule, "a RewriteRule" do
   subject do
     rule = Apache::RewriteRule.new
-    rule.cond('%{REQUEST_FILENAME}', '^/test$')
-    rule.rule(%r{^/$}, '/test', :last => true, :preserve_query_string => true)
+    rule.cond('/%{REQUEST_FILENAME}', '^/test$')
+    rule.rule(%r{^/test$}, '/test2', :last => true, :preserve_query_string => true)
     rule
   end
 
-  its(:to_s) { should == 'RewriteRule "^/$" "/test" [L,QSA]' }
+  its(:to_s) { should == 'RewriteRule "^/test$" "/test2" [L,QSA]' }
   its(:to_a) { should == [
-    'RewriteCond "%{REQUEST_FILENAME}" "^/test$"',
-    'RewriteRule "^/$" "/test" [L,QSA]'
+    'RewriteCond "/%{REQUEST_FILENAME}" "^/test$"',
+    'RewriteRule "^/test$" "/test2" [L,QSA]'
   ] }
 
-  it "should pass the test" do
-    subject.test('/').should == '/test'
+  it "should not the test" do
+    subject.test('/test', :request_filename => 'test').should == '/test2'
   end
 end
 
