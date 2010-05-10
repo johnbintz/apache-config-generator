@@ -1,4 +1,20 @@
 module Apache
+  # Methods to handle logging configuration are defined here.
+  #
+  # For each of the four main log types (Custom, Error, Script, and Rewrite), the following two methods are created:
+  #
+  # * (type)_log: A non-rotated log file
+  # * rotate_(type)_log: A rotated log file
+  #
+  # Non-rotated logs work as such:
+  #  custom_log "/path/to/log/file.log", :common #=> CustomLog "/path/to/log/file.log" common
+  #
+  # Rotated logs work as such:
+  #  rotate_custom_log "/path/to/log/file-%Y%m%d.log", 86400, :common
+  #    #=> CustomLog "|/path/to/rotatelogs /path/to/log/file-%Y%m%d.jpg 86400" common
+  #
+  # Both variations check to make sure the log file diretory exists during generation.
+  # The rotate_ variations need @rotate_logs_path set to work.
   module Logging
     [ :custom, :error, :script, :rewrite ].each do |type|
       class_eval <<-EOT

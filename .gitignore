@@ -1,4 +1,6 @@
 .loadpath
 .project
 coverage/*
+docs/*
+
 

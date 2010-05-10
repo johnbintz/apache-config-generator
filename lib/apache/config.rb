@@ -3,6 +3,53 @@ require 'fileutils'
 Dir[File.join(File.dirname(__FILE__), '*.rb')].each { |f| require f }
 
 module Apache
+  # The core class of Apache Config Generator.
+  #
+  # Configuration is built by calling either build or build_if:
+  #
+  # Ex: Build a config file regardless of current environment:
+  #
+  #  Apache::Config.build('my-config.conf') do
+  #    document_root '/my/document/root'
+  #    ...
+  #  end
+  #
+  # Ex: Build a config file only if you're in the development environment:
+  #
+  #  Apache::Config.build_if('my-config.conf', :development) do
+  #    document_root '/my/document/root'
+  #    ...
+  #  end
+  #
+  # By default, methods called within the block are NerdCapsed to match the Apache config directive format:
+  #
+  #  document_root #=> DocumentRoot
+  #  options #=> Options
+  #  allow_override #=> AllowOverride
+  #
+  # Parameters passed into the methods are quoted if they're Strings or Integers, and not quoted if they're Symbols:
+  #
+  #  document_root '/my/document/root' #=> DocumentRoot "/my/document/root"
+  #  document_root '/my/document/root'.to_sym #=> DocumentRoot /my/document/root
+  #  accept_path_info :off #=> AcceptPathInfo off
+  #
+  # Suffixing the method name with an exclamation point turns off quoting for all parameters:
+  #
+  #  document_root! '/my/document/root' #=> DocumentRoot /my/document/root
+  #
+  # Block-level directives work the same as the top-level build method:
+  #
+  #  directory '/my/site' do
+  #    allow_from_all
+  #    satisfy :any
+  #  end
+  #
+  # Directives that require a regular expression take a Regexp:
+  #
+  #  location_match %r{^/my/site} do
+  #     set_env 'this_is_my_site', 'yes'
+  #  end
+
   class Config
     class << self
       attr_accessor :line_indent, :rotate_logs_path
@@ -69,6 +116,10 @@ module Apache
       # Apachify a string
       #
       # Split the provided name on underscores and capitalize the individual parts
+      # Certain character strings are capitalized to match Apache directive names:
+      # * Cgi => CGI
+      # * Ssl => SSL
+      # * Ldap => LDAP
       def apachify(name)
         case name
           when String, Symbol
@@ -79,6 +130,8 @@ module Apache
       end
 
       # Handle options that aren't specially handled
+      #
+      # Method names are NerdCapsed and paramters are quoted, unless the method ends with !
       def method_missing(method, *args)
         if method.to_s[-1..-1] == "!"
           method = method.to_s[0..-2].to_sym
@@ -90,6 +143,11 @@ module Apache
       end
 
       # Handle creating block methods
+      #
+      # Methods created this way are:
+      # * virtual_host
+      # * location
+      # * files
       def block_methods(*methods)
         methods.each do |method|
           self.class.class_eval <<-EOT
@@ -100,23 +158,44 @@ module Apache
         end
       end
 
+      # If the given module is loaded, process the directives within.
+      #
+      # The provided module name is converted into Apache module name format:
+      #  if_module(:php5) do #=> <IfModule mod_php5>
       def if_module(mod, &block)
         blockify(apachify('if_module'), "#{mod}_module".to_sym, &block)
       end
 
+      # Create a directory block, checking to see if the source directory exists.
       def directory(dir, &block)
         directory? dir
         blockify(apachify('directory'), dir, &block)
       end
 
+      # Create a LocationMatch block with the provided Regexp:
+      #  location_match %r{^/my/location/[a-z0-9]+\.html} do #=> <LocationMatch "^/my/location/[a-z0-9]+\.html">
       def location_match(regexp, &block)
         blockify(apachify('location_match'), regexp.source, &block)
       end
 
-      def if_environment(env, &block)
-        self.instance_eval(&block) if APACHE_ENV == env
+      # Create a FilesMatch block with the provied Regexp:
+      #  files_match %r{\.html$} do #=> FilesMatch "\.html$">
+      def files_match(regexp, &block)
+        blockify(apachify('files_match'), regexp.source, &block)
       end
 
+      # Only execute the provided block if APACHE_ENV matches one of the provided enviroment symbols:
+      #  if_environment(:production) do
+      def if_environment(*env, &block)
+        self.instance_eval(&block) if env.include?(APACHE_ENV)
+      end
+
+      # Blockify the second parameter of a block
+      #
+      # The name is processed differently based on input object type:
+      # * String - the name is quoteized
+      # * Array - all of the array members are quoteized
+      # * Symbol - the name is to_s
       def blockify_name(name)
         case name
           when String
@@ -139,7 +218,14 @@ module Apache
         self << ""
       end
 
+      # Build a string that invokes Apache's rotatelogs command
       def rotatelogs(path, time)
+        begin
+          time = time.to_i
+        rescue
+          raise "Time should be an integer: #{path} #{time}"
+        end
+
         "|#{@rotate_logs_path} #{path} #{time}"
       end
 
@@ -157,6 +243,6 @@ module Apache
         end
     end
 
-    block_methods :virtual_host, :files_match, :location, :files
+    block_methods :virtual_host, :location, :files
   end
 end

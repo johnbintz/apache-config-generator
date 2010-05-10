@@ -1,5 +1,7 @@
 module Apache
+  # Add quotes around parameters as needed
   module Quoteize
+    # Add quotes around most parameters, and don't add quotes around Symbols
     def quoteize(*args)
       args.collect do |arg|
         case arg

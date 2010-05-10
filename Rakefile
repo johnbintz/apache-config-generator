@@ -2,6 +2,12 @@ $LOAD_PATH << 'lib'
 
 require 'apache'
 require 'spec/rake/spectask'
+require 'sdoc'
+require 'sdoc_helpers/markdown'
+require 'echoe'
+require 'pp'
+
+pp RDoc::TopLevel
 
 namespace :apache do
   desc "Generate the configs"
@@ -20,4 +26,11 @@ namespace :spec do
     t.rcov_opts = ['--exclude', 'spec', '--exclude', 'gems']
     t.spec_opts = ['-b']
   end
+end
+
+Rake::RDocTask.new do |rdoc|
+  rdoc.template = 'direct'
+  rdoc.rdoc_files.add('lib')
+  rdoc.main = "lib/apache/config.rb"
+  rdoc.rdoc_dir = 'docs'
 end
