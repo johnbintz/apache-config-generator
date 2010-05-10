@@ -14,8 +14,8 @@ module Apache
 
     alias :allow_from_all! :allow_from_all
 
-    def allow_from(where)
-      allow "from_#{where}".to_sym
+    def allow_from(*where)
+      self << "Allow from #{quoteize(*where) * " "}"
     end
 
     def order(*args)
@@ -39,7 +39,7 @@ module Apache
 
     alias :order! :order
 
-    def basic_authentication(zone, users_file, requires)
+    def basic_authentication(zone, users_file, requires = {})
       exist? users_file
       auth_type :basic
       auth_name zone
@@ -51,7 +51,7 @@ module Apache
 
     alias :basic_authentication! :basic_authentication
 
-    def ldap_authentication(zone, url, requires)
+    def ldap_authentication(zone, url, requires = {})
       auth_type :basic
       auth_name zone
       auth_basic_provider :ldap

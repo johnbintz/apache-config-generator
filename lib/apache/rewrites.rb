@@ -84,10 +84,17 @@ module Apache
   module RegularExpressionMatcher
     def test(from, opts = {})
       from = from.gsub(@from, @to.gsub(/\$([0-9])/) { |m| '\\' + $1 })
+      replace_placeholders(from, opts)
+    end
+
+    def replace_placeholders(s, opts)
       opts.each do |opt, value|
-        from = from.gsub('%{' + opt.to_s.upcase + '}', value)
+        case value
+          when String
+            s = s.gsub('%{' + opt.to_s.upcase + '}', value)
+        end
       end
-      from
+      s
     end
   end
 
@@ -161,6 +168,19 @@ module Apache
 
       output
     end
+
+    def test(from, opts = {})
+      ok = true
+      @conditions.each do |c|
+        ok = false if !c.test(from, opts)
+      end
+
+      if ok
+        super(from, opts)
+      else
+        replace_placeholders(from, opts)
+      end
+    end
   end
 
   class RedirectMatchPermanent < MatchableThing
@@ -174,6 +194,8 @@ module Apache
   end
 
   class RewriteCondition < MatchableThing
+    include RegularExpressionMatcher
+
     def tag; 'RewriteCond'; end
 
     def rule(from, to, *opts)
@@ -202,6 +224,26 @@ module Apache
 
     def to_s
       "#{tag} #{[quoteize(@from), quoteize(@to), @options].compact.flatten * " "}"
+    end
+
+    def test(from, opts = {})
+      super(from, opts)
+      source = replace_placeholders(@from, opts)
+
+      result = false
+      case @to[0..0]
+        when '!'
+          result = !source[Regexp.new(@to[1..-1])]
+        when '-'
+          case @to
+            when '-f'
+              result = opts[:files].include? source if opts[:files]
+          end
+        else
+          result = source[Regexp.new(@to)]
+      end
+
+      result
     end
   end
 end
