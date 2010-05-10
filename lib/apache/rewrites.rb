@@ -6,7 +6,7 @@ module Apache
     #  enable_rewrite_engine :log_level => 1 #=>
     #    RewriteEngine on
     #    RewriteLogLevel 1
-    def enable_rewrite_engine(options)
+    def enable_rewrite_engine(options = {})
       self << ''
       rewrite_engine! :on
       options.each do |option, value|
@@ -179,6 +179,8 @@ module Apache
         case key
           when :last
             'L'
+          when :pass_through
+            'PT'
           when :preserve_query_string
             'QSA'
         end
