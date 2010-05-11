@@ -2,6 +2,7 @@ require 'fileutils'
 require 'apache/config'
 require 'apache/rake/create'
 require 'yaml'
+require 'rainbow'
 
 namespace :apache do
   desc "Create all defined configs for the specified environment"
@@ -19,7 +20,7 @@ namespace :apache do
     Dir.chdir CONFIG[:dest_path]
 
     Dir[File.join(CONFIG[:source_path], '**', '*.rb')].each do |file|
-      puts file
+      puts file.foreground(:green)
       require file
     end
   end

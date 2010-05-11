@@ -85,7 +85,7 @@ module Apache
     # Create an Apache require directive.
     # Used to get around Ruby reserved word.
     def apache_require(*opts)
-      self << "Require #{opts * " "}"
+      self << "Require #{opts.compact * " "}"
     end
   end
 end

@@ -21,9 +21,13 @@ module Apache
     end
 
     # Pass the block to RewriteManager.build
-    def rewrites(&block)
-      self + indent(RewriteManager.build(&block))
+    def rewrites(*opt, &block)
+      self + indent(RewriteManager.build(*opt, &block))
       self << ''
+    end
+
+    def rewrite(*opt, &block)
+      raise "You probably want rewrites #{quoteize(*opt) * " "} do" if block
     end
 
     # Create a permanent Redirect
@@ -45,12 +49,27 @@ module Apache
       end
 
       # Build rewritable things from the provided block
-      def build(&block)
+      def build(*opt, &block)
         reset!
 
+        @any_tests = false
+        @needs_tests = false
         self.instance_eval(&block)
 
-        @rewrites.collect(&:to_a).flatten
+        name = opt.first || (@rewrites.empty? ? 'unnamed block' : "#{@rewrites.first.from} => #{@rewrites.first.to}")
+
+        if !@any_tests && !@rewrites.empty?
+          puts "  [#{"rewrite".foreground(:blue)}] no tests found for #{name}"
+        end
+
+        if @needs_tests
+          puts "  [#{"rewrite".foreground(:blue)}] #{name} needs more tests"
+        end
+
+        output = @rewrites.collect(&:to_a).flatten
+        output.unshift("# #{name}") if opt.first
+
+        output
       end
 
       # Commit the latest rewritable thing to the list of rewrites
@@ -98,21 +117,49 @@ module Apache
 
       # Test the rewritable things defined in this block
       def rewrite_test(from, to, opts = {})
+        @any_tests = true
         orig_from = from.dup
         @rewrites.each do |r|
           pre_from = from.dup
           if r.match?(from, opts)
             from = r.test(from, opts)
-            from = pre_from if (from == '-')
+            from = pre_from if (r.to == '-')
+            from = :http_forbidden if (r.forbidden?)
             break if r.stop_if_match?
           end
         end
 
         if from != to
-          puts "[warn] #{orig_from} >> #{to} failed!"
-          puts "[warn] Result: #{from}"
+          puts "  [#{"rewrite".foreground(:blue)}] #{orig_from} >> #{to} failed!"
+          puts "  [#{"rewrite".foreground(:blue)}] Result: #{from}"
         end
       end
+
+      def needs_tests
+        @needs_tests = true
+      end
+
+      def cond_not_a_file(opts = {})
+        cond_file_flag '!-f', opts
+      end
+
+      def cond_is_a_file(opts = {})
+        cond_file_flag '-f', opts
+      end
+
+      def cond_not_a_directory(opts = {})
+        cond_file_flag '!-d', opts
+      end
+
+      def cond_is_a_directory(opts = {})
+        cond_file_flag '-d', opts
+      end
+
+      private
+        def cond_file_flag(flag, opts)
+          cond opts[:filename_only] ? "%{REQUEST_FILENAME}" : "%{DOCUMENT_ROOT}%{REQUEST_FILENAME}", flag
+        end
+
     end
   end
 
@@ -144,6 +191,8 @@ module Apache
   class MatchableThing
     include Apache::Quoteize
 
+    attr_reader :from, :to
+
     # The Apache directive tag for this thing
     def tag; raise 'Override this method'; end
 
@@ -166,6 +215,7 @@ module Apache
     end
 
     def stop_if_match?; false; end
+    def forbidden?; false; end
   end
 
   # A RewriteRule definition
@@ -195,12 +245,18 @@ module Apache
         case key
           when :last
             'L'
+          when :forbidden
+            'F'
+          when :no_escape
+            'NE'
           when :redirect
-            'R'
+            (value == true) ? 'R' : "R=#{value}"
           when :pass_through
             'PT'
           when :preserve_query_string
             'QSA'
+          when :env
+            "E=#{value}"
         end
       end.compact.sort
 
@@ -220,11 +276,12 @@ module Apache
     end
 
     def to_a
-      [ @conditions.collect(&:to_s), super ].flatten
+      [ ('' if !@conditions.empty?), @conditions.collect(&:to_s), super ].flatten
     end
 
     # Test this RewriteRule, ensuring the RewriteConds also match
     def test(from, opts = {})
+      opts[:request_uri] = from
       result = from
 
       result = super(from, opts) if match?(from, opts)
@@ -233,6 +290,7 @@ module Apache
     end
 
     def match?(from, opts = {})
+      opts[:request_uri] = from
       ok = true
 
       @conditions.each do |c|
@@ -248,6 +306,10 @@ module Apache
 
     def stop_if_match?
       @input_options[:last]
+    end
+
+    def forbidden?
+      @input_options[:forbidden]
     end
   end
 
@@ -313,20 +375,26 @@ module Apache
       super(from, opts)
       source = replace_placeholders(@from, opts)
 
+      to = @to
+      reverse = false
+
+      if @to[0..0] == '!'
+        reverse = true
+        to = @to[1..-1]
+      end
+
       result = false
-      case @to[0..0]
-        when '!'
-          result = !source[Regexp.new(@to[1..-1])]
+      case to[0..0]
         when '-'
-          case @to
+          case to
             when '-f'
               result = opts[:files].include? source if opts[:files]
           end
         else
-          result = source[Regexp.new(@to)]
+          result = source[Regexp.new(to)]
       end
 
-      result
+      reverse ? !result : result
     end
   end
 end

@@ -20,6 +20,7 @@ Echoe.new('apache-config-generator') do |p|
   p.summary = "A Ruby DSL for programmatically generating Apache configs"
   p.ignore_pattern = [ 'spec/**/*', 'test/**/*', 'docs/**/*' ]
   p.executable_pattern = [ 'bin/**/*' ]
+  p.runtime_dependencies = [ 'rainbow' ]
 end
 
 namespace :spec do
@@ -34,6 +35,7 @@ end
 
 Rake::RDocTask.new do |rdoc|
   rdoc.template = 'direct'
-  rdoc.rdoc_files.add('lib')
+  rdoc.rdoc_files.add('lib', 'README.rdoc')
+  rdoc.main = 'README.rdoc'
   rdoc.rdoc_dir = 'docs'
 end

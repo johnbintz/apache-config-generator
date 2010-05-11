@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'rainbow'
 
 Dir[File.join(File.dirname(__FILE__), '*.rb')].each { |f| require f }
 
@@ -124,7 +125,9 @@ module Apache
       def apachify(name)
         case name
           when String, Symbol
-            name.to_s.split("_").collect(&:capitalize).join.gsub('Ssl', 'SSL').gsub('Cgi', 'CGI').gsub('Ldap', 'LDAP').gsub('Url', 'URL')
+            name.to_s.split("_").collect(&:capitalize).join.gsub('Ssl', 'SSL').
+                gsub('Cgi', 'CGI').gsub('Ldap', 'LDAP').gsub('Url', 'URL').
+                gsub('Etag', 'ETag')
           when Array
             name.collect { |n| apachify(n) }
         end
@@ -230,17 +233,21 @@ module Apache
         "|#{@rotate_logs_path} #{path} #{time}"
       end
 
+      def warn_msg(from, color = :red)
+        "[warn::#{from}]".foreground(color)
+      end
+
       private
         def writable?(path)
-          puts "[warn] #{path} may not be writable!" if !File.directory? File.split(path).first
+          puts "  #{warn_msg('writable?')} #{path.foreground(:yellow)} may not be writable!" if !File.directory? File.split(path).first
         end
 
         def directory?(path)
-          puts "[warn] #{path} does not exist!" if !File.directory? path
+          puts "  #{warn_msg('directory?')} #{path.foreground(:yellow)} does not exist!" if !File.directory? path
         end
 
         def exist?(path)
-          puts "[warn] #{path} does not exist!" if !File.exist?(path)
+          puts "  #{warn_msg('exist?')} #{path.foreground(:yellow)} does not exist!" if !File.exist?(path)
         end
     end
 

@@ -26,7 +26,7 @@ describe Apache::Config, "rewrites" do
       rule %r{^/$}, '/test'
     end
     apache.to_a.should == [
-      'RewriteRule "^/$" "/test"', ''
+      '', 'RewriteRule "^/$" "/test"', ''
     ]
   end
 end
@@ -46,6 +46,7 @@ describe Apache::RewriteManager, "specific rewrite rules" do
       rewrite_test '/fail', '/test'
       rewrite_test '/%{REQUEST_FILENAME}', '/test', :request_filename => 'success'
     end.should == [
+      '',
       'RewriteCond "%{REQUEST_FILENAME}" "test"',
       'RewriteRule "^/$" "/test"',
       'RedirectMatch permanent "^/success$" "/test"'
@@ -79,6 +80,7 @@ describe Apache::RewriteRule, "a RewriteRule" do
 
   its(:to_s) { should == 'RewriteRule "^/test$" "/test2" [L,QSA]' }
   its(:to_a) { should == [
+    '',
     'RewriteCond "/%{REQUEST_FILENAME}" "^/test$"',
     'RewriteRule "^/test$" "/test2" [L,QSA]'
   ] }

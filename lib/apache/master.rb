@@ -8,6 +8,11 @@ module Apache
       @config += Modules.build(*modules, &block)
     end
 
+    def listen(*opt)
+      opt.each { |o| self << "Listen #{quoteize(o)}" }
+    end
+    alias :listen! :listen
+
     # Add a User/Group block
     #  runner('www', 'www-data') #=>
     #    User www
