@@ -253,7 +253,7 @@ module Apache
             (value == true) ? 'R' : "R=#{value}"
           when :pass_through
             'PT'
-          when :preserve_query_string
+          when :preserve_query_string, :query_string_append
             'QSA'
           when :env
             "E=#{value}"
