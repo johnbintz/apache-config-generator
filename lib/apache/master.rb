@@ -101,5 +101,12 @@ module Apache
         self << output
       end
     end
+
+    def server_name(*opts)
+      if first = opts.shift
+        self << "ServerName #{quoteize(first)}"
+        opts.each { |o| server_alias o } if !opts.empty?
+      end
+    end
   end
 end

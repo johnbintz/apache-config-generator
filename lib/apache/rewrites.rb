@@ -1,3 +1,5 @@
+require 'pp'
+
 module Apache
   # Handle the creation of RewriteRules, RewriteConds, Redirects, and RedirectMatches
   module Rewrites
@@ -98,7 +100,12 @@ module Apache
       def rewrite_test(from, to, opts = {})
         orig_from = from.dup
         @rewrites.each do |r|
-          from = r.test(from, opts)
+          pre_from = from.dup
+          if r.match?(from, opts)
+            from = r.test(from, opts)
+            from = pre_from if (from == '-')
+            break if r.stop_if_match?
+          end
         end
 
         if from != to
@@ -117,6 +124,10 @@ module Apache
       replace_placeholders(from, opts)
     end
 
+    def match?(from, opts = {})
+      replace_placeholders(from, opts)[@from]
+    end
+
     # Replace the placeholders in this rewritable thing
     def replace_placeholders(s, opts)
       opts.each do |opt, value|
@@ -125,7 +136,7 @@ module Apache
             s = s.gsub('%{' + opt.to_s.upcase + '}', value)
         end
       end
-      s
+      s.gsub(%r{%\{[^\}]+\}}, '')
     end
   end
 
@@ -153,6 +164,8 @@ module Apache
     def to_a
       [ to_s ]
     end
+
+    def stop_if_match?; false; end
   end
 
   # A RewriteRule definition
@@ -165,26 +178,31 @@ module Apache
       super
       @conditions = []
       @options = nil
+      @input_options = {}
     end
 
     # Define the rule, passing in additional options
     #
     # rule %r{^/here}, '/there', { :last => true, :preserve_query_string => true }
-    def rule(from, to,options = {})
+    def rule(from, to, options = {})
       super(from, to)
 
       raise "from must be a Regexp" if !from.kind_of?(Regexp)
+
+      @input_options = options
 
       options = options.collect do |key, value|
         case key
           when :last
             'L'
+          when :redirect
+            'R'
           when :pass_through
             'PT'
           when :preserve_query_string
             'QSA'
         end
-      end.sort
+      end.compact.sort
 
       @options = !options.empty? ? "[#{options * ','}]" : nil
     end
@@ -207,7 +225,16 @@ module Apache
 
     # Test this RewriteRule, ensuring the RewriteConds also match
     def test(from, opts = {})
+      result = from
+
+      result = super(from, opts) if match?(from, opts)
+
+      replace_placeholders(result, opts)
+    end
+
+    def match?(from, opts = {})
       ok = true
+
       @conditions.each do |c|
         ok = false if !c.test(from, opts)
       end
@@ -215,8 +242,12 @@ module Apache
       if ok
         super(from, opts)
       else
-        replace_placeholders(from, opts)
+        false
       end
+    end
+
+    def stop_if_match?
+      @input_options[:last]
     end
   end
 
@@ -235,6 +266,8 @@ module Apache
     def to_s
       "#{tag} #{[quoteize(@from.source), quoteize(@to)].compact.flatten * " "}"
     end
+
+    def stop_if_match; true; end
   end
 
   # A RewriteCond
