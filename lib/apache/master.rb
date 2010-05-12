@@ -113,5 +113,11 @@ module Apache
         opts.each { |o| server_alias o } if !opts.empty?
       end
     end
+
+    def document_root(*opts)
+      directory? opts.first
+      self << "DocumentRoot #{quoteize(opts.first)}"
+    end
+    alias :document_root! :document_root
   end
 end
