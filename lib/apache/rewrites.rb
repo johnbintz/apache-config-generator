@@ -170,7 +170,7 @@ module Apache
   module RegularExpressionMatcher
     # Test this rewritable thing
     def test(from, opts = {})
-      from = from.gsub(@from, @to.gsub(/\$([0-9])/) { |m| '\\' + $1 })
+      from = from.gsub(@from, @to.gsub(/\$([0-9])/) { |match| '\\' + $1 })
       replace_placeholders(from, opts)
     end
 
@@ -179,14 +179,14 @@ module Apache
     end
 
     # Replace the placeholders in this rewritable thing
-    def replace_placeholders(s, opts)
+    def replace_placeholders(string, opts)
       opts.each do |opt, value|
         case value
           when String
-            s = s.gsub('%{' + opt.to_s.upcase + '}', value)
+            string = string.gsub('%{' + opt.to_s.upcase + '}', value)
         end
       end
-      s.gsub(%r{%\{[^\}]+\}}, '')
+      string.gsub(%r{%\{[^\}]+\}}, '')
     end
   end
 
@@ -387,12 +387,9 @@ module Apache
       end
 
       result = false
-      case to[0..0]
-        when '-'
-          case to
-            when '-f'
-              result = opts[:files].include? source if opts[:files]
-          end
+      case to
+        when '-f'
+          result = opts[:files].include?(source) if opts[:files]
         else
           result = source[Regexp.new(to)]
       end

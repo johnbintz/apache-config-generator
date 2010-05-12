@@ -3,12 +3,13 @@ module Apache
     def enable_ssl_engine(options = {})
       self << ""
       self << "SSLEngine on"
-      options.each do |k, v|
-        case k
+      options.each do |key, value|
+        value = quoteize(value).first
+        case key
           when :certificate_file, :certificate_key_file
-            self << "SSL#{apachify(k)} #{quoteize(v).first}"
+            self << "SSL#{apachify(key)} #{value}"
           when :ca_certificate_file
-            self << "SSLCACertificateFile #{quoteize(v).first}"
+            self << "SSLCACertificateFile #{value}"
         end
       end
       self << ""

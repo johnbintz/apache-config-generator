@@ -47,8 +47,8 @@ module Apache
               when String
                 @config << "#{which} #{opts * " "}"
               when Array
-                which.each do |w|
-                  @config << "#{w} #{opts.shift}"
+                which.each do |tag|
+                  @config << "#{tag} #{opts.shift}"
                 end
             end
           end
