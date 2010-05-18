@@ -57,7 +57,7 @@ describe Apache::Config, "builds configurations" do
       [ :part, 'part' ],
       [ [ 'part', 'part2' ], '"part" "part2"' ]
     ].each do |name, attribute|
-      apache.blockify_name(name).should == attribute
+      name.blockify.should == attribute
     end
   end
 

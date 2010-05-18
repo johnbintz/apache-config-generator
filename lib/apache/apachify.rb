@@ -34,6 +34,8 @@ class String
   def quoteize
     %{"#{self}"}
   end
+
+  alias :blockify :quoteize
 end
 
 # Ruby symbols
@@ -48,12 +50,18 @@ class Symbol
   end
 
   def quoteize
-    to_s.gsub('_', ' ')
+    self.to_s.gsub('_', ' ')
+  end
+
+  def blockify
+    self.to_s
   end
 end
 
-class Fixnum
-  def quoteize; to_s; end
+# Ruby everything
+class Object
+  alias :quoteize :to_s
+  alias :blockify :to_s
 end
 
 # Ruby arrays
@@ -69,6 +77,10 @@ class Array
 
   def quoteize!
     self.collect!(&:quoteize)
+  end
+
+  def blockify
+    self.quoteize * " "
   end
 
   alias :commentize :to_a

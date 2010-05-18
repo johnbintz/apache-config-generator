@@ -1,8 +1,7 @@
 module Apache
   module SSL
     def enable_ssl_engine(options = {})
-      self << ""
-      self << "SSLEngine on"
+      self + [ '', "SSLEngine on" ]
       options.each do |key, value|
         value = quoteize(value).first
         case key

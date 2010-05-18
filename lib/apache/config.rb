@@ -185,26 +185,9 @@ module Apache
         self.instance_eval(&block) if env.include?(APACHE_ENV)
       end
 
-      # Blockify the second parameter of a block
-      #
-      # The name is processed differently based on input object type:
-      # * String - the name is quoteized
-      # * Array - all of the array members are quoteized
-      # * Symbol - the name is to_s
-      def blockify_name(name)
-        case name
-          when String
-            name.quoteize.first
-          when Array
-            name.quoteize * " "
-          when Symbol
-            name.to_s
-        end
-      end
-
       # Handle the blockification of a provided block
       def blockify(tag_name, name, &block)
-        self + [ '', "<#{[ tag_name, blockify_name(name) ].compact * ' '}>" ]
+        self + [ '', "<#{[ tag_name, name.blockify ].compact * ' '}>" ]
         @line_indent += 1
         self.instance_eval(&block)
         @line_indent -= 1
