@@ -6,7 +6,7 @@ module Apache
     # The options passed into this method are Apachified:
     #  options :exec_cgi, :follow_sym_links #=> Options ExecCGI FollowSymLinks
     def options(*opt)
-      create_options_list('Options', *opt)
+      create_options_list('options'.apachify, *opt)
     end
 
     # Create an IndexOptions directive
@@ -14,7 +14,7 @@ module Apache
     # The options passed into this method are Apachified:
     #  index_options :fancy_indexing, :suppress_description #=> IndexOptions FancyIndexing SuppressDescription
     def index_options(*opt)
-      create_options_list('IndexOptions', *opt)
+      create_options_list('index_options'.apachify, *opt)
     end
 
     private

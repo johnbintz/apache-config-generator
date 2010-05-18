@@ -19,11 +19,11 @@ module Apache
     [ :custom, :error, :script, :rewrite ].each do |type|
       class_eval <<-EOT
         def #{type}_log(*opts)
-          handle_log '#{type.to_s.capitalize}Log', opts.first, quoteize(opts.first), opts[1..-1]
+          handle_log '#{type.to_s.capitalize}Log', opts.first, opts.first.quoteize, opts[1..-1]
         end
 
         def rotate_#{type}_log(*opts)
-          handle_log '#{type.to_s.capitalize}Log', opts.first, quoteize(rotatelogs(*opts[0..1])), opts[2..-1]
+          handle_log '#{type.to_s.capitalize}Log', opts.first, rotatelogs(*opts[0..1]).quoteize, opts[2..-1]
         end
       EOT
     end

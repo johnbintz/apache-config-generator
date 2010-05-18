@@ -26,17 +26,34 @@ class String
   include Apache::Apachify
 
   alias :optionify :apachify
+
+  def commentize
+    self.split("\n")
+  end
+
+  def quoteize
+    %{"#{self}"}
+  end
 end
 
 # Ruby symbols
 class Symbol
   include Apache::Apachify
 
+  # Turn this into an option for IndexOptions
   def optionify
     output = self.apachify
     output = "-#{output[4..-1].apachify}" if self.to_s[0..3] == 'not_'
     output
   end
+
+  def quoteize
+    to_s.gsub('_', ' ')
+  end
+end
+
+class Fixnum
+  def quoteize; to_s; end
 end
 
 # Ruby arrays
@@ -45,4 +62,14 @@ class Array
   def apachify
     self.collect(&:apachify)
   end
+
+  def quoteize
+    self.collect(&:quoteize)
+  end
+
+  def quoteize!
+    self.collect!(&:quoteize)
+  end
+
+  alias :commentize :to_a
 end

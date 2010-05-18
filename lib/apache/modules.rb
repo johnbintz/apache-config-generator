@@ -1,11 +1,7 @@
-require 'apache/quoteize'
-
 module Apache
   # Create lists of modules to load in the Apache 2.2 style (with LoadModule only)
   class Modules
     class << self
-      include Apache::Quoteize
-
       attr_accessor :modules
 
       # Reset the list of modules to output
@@ -27,7 +23,7 @@ module Apache
       def build(*modules, &block)
         reset!
 
-        modules.each { |m| self.send(m) }
+        modules.each { |mod| self.send(mod) }
         self.instance_eval(&block) if block
 
         [ '' ] + @modules + [ '' ]
@@ -37,7 +33,7 @@ module Apache
       def method_missing(method, *args)
         module_name = "#{method}_module"
         module_path = args[0] || "modules/mod_#{method}.so"
-        @modules << [ 'LoadModule', *quoteize(module_name, module_path) ] * " "
+        @modules << [ 'LoadModule', *[ module_name, module_path ].quoteize ] * " "
       end
     end
   end

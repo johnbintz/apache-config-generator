@@ -27,7 +27,7 @@ module Apache
     end
 
     def rewrite(*opt, &block)
-      raise "You probably want rewrites #{quoteize(*opt) * " "} do" if block
+      raise "You probably want rewrites #{opt.quoteize * " "} do" if block
     end
 
     # Create a permanent Redirect
@@ -37,7 +37,7 @@ module Apache
       if opt.first && !opt.first.kind_of?(::String)
         raise "First parameter should be a String. Did you mean to wrap this in a rewrites block? #{opt.first}"
       end
-      self << "Redirect permanent #{quoteize(*opt) * " "}"
+      self << "Redirect permanent #{opt.quoteize * " "}"
     end
   end
 
@@ -192,8 +192,6 @@ module Apache
 
   # A matchable thing to be extended
   class MatchableThing
-    include Apache::Quoteize
-
     attr_reader :from, :to
 
     # The Apache directive tag for this thing
@@ -210,7 +208,7 @@ module Apache
     end
 
     def to_s
-      "#{tag} #{[quoteize(@from), quoteize(@to)].compact.flatten * " "}"
+      "#{tag} #{[@from, @to].quoteize.compact.flatten * " "}"
     end
 
     def to_a
@@ -275,7 +273,7 @@ module Apache
     end
 
     def to_s
-      "#{tag} #{[quoteize(@from.source), quoteize(@to), @options].compact.flatten * " "}"
+      "#{tag} #{[@from.source.quoteize, @to.quoteize, @options].compact.flatten * " "}"
     end
 
     def to_a
@@ -329,7 +327,7 @@ module Apache
     end
 
     def to_s
-      "#{tag} #{[quoteize(@from.source), quoteize(@to)].compact.flatten * " "}"
+      "#{tag} #{[@from.source, @to].quoteize.compact.flatten * " "}"
     end
 
     def stop_if_match; true; end
@@ -370,7 +368,7 @@ module Apache
     end
 
     def to_s
-      "#{tag} #{[quoteize(@from), quoteize(@to), @options].compact.flatten * " "}"
+      "#{tag} #{[@from.quoteize, @to.quoteize, @options].compact.flatten * " "}"
     end
 
     # Test this RewriteCond

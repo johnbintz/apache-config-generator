@@ -57,7 +57,6 @@ module Apache
       attr_accessor :line_indent, :rotate_logs_path
 
       include Apache::Master
-      include Apache::Quoteize
       include Apache::Permissions
       include Apache::Directories
       include Apache::Logging
@@ -132,7 +131,7 @@ module Apache
         if method_name[-1..-1] == "!"
           method = method_name[0..-2].to_sym
         else
-          args = *quoteize(*args)
+          args.quoteize!
         end
 
         self << [ method.apachify, *args ].compact * ' '
@@ -195,9 +194,9 @@ module Apache
       def blockify_name(name)
         case name
           when String
-            quoteize(name).first
+            name.quoteize.first
           when Array
-            (quoteize(*name) * " ")
+            name.quoteize * " "
           when Symbol
             name.to_s
         end

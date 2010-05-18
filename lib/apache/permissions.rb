@@ -21,7 +21,7 @@ module Apache
     #
     #  allow_from '127.0.0.1' #=> Allow from "127.0.0.1"
     def allow_from(*where)
-      self << "Allow from #{quoteize(*where) * " "}"
+      self << "Allow from #{where.quoteize * " "}"
     end
 
     # Specify default access order
@@ -58,26 +58,18 @@ module Apache
     #  basic_authentication "My other secret", '/my.users', :user => [ :john ]
     def basic_authentication(zone, users_file, requires = {})
       exist? users_file
-      auth_type :basic
-      auth_name zone
+      authentication_basics(zone, requires)
       auth_user_file users_file
-      requires.each do |type, values|
-        apache_require type, *values
-      end
     end
 
     alias :basic_authentication! :basic_authentication
 
     # Set up LDAP authentication
     def ldap_authentication(zone, url, requires = {})
-      auth_type :basic
-      auth_name zone
+      authentication_basics(zone, requires)
       auth_basic_provider :ldap
       authz_ldap_authoritative :on
       auth_ldap_url url
-      requires.each do |type, values|
-        apache_require type, *values
-      end
     end
 
     alias :ldap_authentication! :ldap_authentication
@@ -87,5 +79,14 @@ module Apache
     def apache_require(*opts)
       self << "Require #{opts.compact * " "}"
     end
+
+    private
+      def authentication_basics(zone, requires)
+        auth_type :basic
+        auth_name zone
+        requires.each do |type, values|
+          apache_require type, *values
+        end
+      end
   end
 end

@@ -41,8 +41,8 @@ describe Apache::Config, "builds configurations" do
   end
 
   it "should quoteize properly" do
-    apache.quoteize("test", "test2").should == %w{"test" "test2"}
-    apache.quoteize(:test, :test2).should == %w{test test2}
+    ["test", "test2"].quoteize.should == %w{"test" "test2"}
+    [:test, :test2].quoteize.should == %w{test test2}
   end
 
   it "should blockify a block" do

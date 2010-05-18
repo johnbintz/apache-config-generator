@@ -15,7 +15,7 @@ module Apache
     #    Listen "1.2.3.4:80"
     #    Listen "2.3.4.5:80"
     def listen(*opt)
-      opt.each { |o| self << "Listen #{quoteize(o)}" }
+      opt.each { |adapter| self << "Listen #{adapter.quoteize}" }
     end
     alias :listen! :listen
 
@@ -48,27 +48,19 @@ module Apache
     end
 
     # Set the TCP timeout. Defined here to get around various other timeout methods.
-    def timeout(t)
-      self << "Timeout #{t}"
+    def timeout(time)
+      self << "Timeout #{time}"
     end
 
     # Add a comment to the Apache config. Can pass in either a String or Array of comment lines.
-    def comment(c)
-      out = [ '' ]
-      case c
-        when String
-          out += c.split("\n")
-        when Array
-          out += c
-      end
-      out << ''
-      self + out.collect { |line| "# #{line.strip}".strip }
+    def comment(what)
+      self + [ '', what.commentize, '' ].flatten.collect { |line| "# #{line.strip}".strip }
     end
 
     # Create a ScriptAlias, checking to make sure the filesystem path exists.
     def script_alias(uri, path)
       directory? path
-      self << %{ScriptAlias #{quoteize(uri, path) * ' '}}
+      self << %{ScriptAlias #{[ uri, path ].quoteize * ' '}}
     end
 
     alias :script_alias! :script_alias
@@ -92,7 +84,7 @@ module Apache
     # Alias a URL to a directory in the filesystem.
     # Used to get around reserved Ruby keyword.
     def apache_alias(*opts)
-      self << "Alias #{quoteize(*opts) * " "}"
+      self << "Alias #{opts.quoteize * " "}"
     end
 
     # Set multiple headers to be delivered for a particular section
@@ -102,12 +94,12 @@ module Apache
     #  Header set "Content-dispoaition" "attachment" env=only-for-downloads
     def set_header(hash)
       hash.each do |key, value|
-        output = "Header set #{quoteize(key)}"
+        output = "Header set #{key.quoteize}"
         case value
           when String, Symbol
-            output += " #{quoteize(value)}"
+            output += " #{value.quoteize}"
           when Array
-            output += " #{quoteize(value.first)} #{value.last}"
+            output += " #{value.first.quoteize} #{value.last}"
         end
         self << output
       end
@@ -115,14 +107,15 @@ module Apache
 
     def server_name(*opts)
       if first = opts.shift
-        self << "ServerName #{quoteize(first)}"
-        opts.each { |o| server_alias o } if !opts.empty?
+        self << "ServerName #{first.quoteize}"
+        opts.each { |name| server_alias name } if !opts.empty?
       end
     end
 
     def document_root(*opts)
-      directory? opts.first
-      self << "DocumentRoot #{quoteize(opts.first)}"
+      dir = opts.first
+      directory? dir
+      self << "DocumentRoot #{dir.quoteize}"
     end
     alias :document_root! :document_root
   end
