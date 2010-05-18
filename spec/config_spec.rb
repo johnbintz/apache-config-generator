@@ -40,20 +40,6 @@ describe Apache::Config, "builds configurations" do
     ]
   end
 
-  it "should Apachify the name" do
-    [
-      %w{test Test},
-      %w{test_full_name TestFullName},
-      %w{ssl_option SSLOption},
-      %w{exec_cgi ExecCGI},
-      %w{authz_ldap_authoritative AuthzLDAPAuthoritative},
-      %w{authz_ldap_url AuthzLDAPURL},
-      [ ["name", "other_name"], [ 'Name', 'OtherName' ] ]
-    ].each do |input, output|
-      apache.apachify(input).should == output
-    end
-  end
-
   it "should quoteize properly" do
     apache.quoteize("test", "test2").should == %w{"test" "test2"}
     apache.quoteize(:test, :test2).should == %w{test test2}
@@ -84,8 +70,8 @@ describe Apache::Config, "builds configurations" do
   it "should handle building if the environment is correct" do
     set_apache_env(:test)
 
-    apache.build_if(nil, :other) { my_test 'this' }.should == nil
-    apache.build_if(nil, :test) { my_test 'this' }.should == [ 'MyTest "this"' ]
+    apache.build_and_return_if(:other) { my_test 'this' }.should == nil
+    apache.build_and_return_if(:test) { my_test 'this' }.should == [ 'MyTest "this"' ]
   end
 
   it "should only execute a block if the environment is correct" do

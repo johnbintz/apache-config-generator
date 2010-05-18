@@ -7,7 +7,7 @@ module Apache
         value = quoteize(value).first
         case key
           when :certificate_file, :certificate_key_file
-            self << "SSL#{apachify(key)} #{value}"
+            self << "SSL#{key.apachify} #{value}"
           when :ca_certificate_file
             self << "SSLCACertificateFile #{value}"
         end

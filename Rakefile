@@ -1,5 +1,7 @@
 $LOAD_PATH << 'lib'
 
+require 'rubygems'
+
 require 'apache'
 require 'spec/rake/spectask'
 require 'sdoc'
@@ -38,4 +40,8 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.add('lib', 'README.rdoc')
   rdoc.main = 'README.rdoc'
   rdoc.rdoc_dir = 'docs'
+end
+
+task :reek do
+  system('reek lib/*')
 end

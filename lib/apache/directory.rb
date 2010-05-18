@@ -19,20 +19,7 @@ module Apache
 
     private
       def create_options_list(tag, *opt)
-        opt = opt.collect do |o|
-          case o
-            when Symbol
-              if o.to_s[0..3] == 'not_'
-                "-#{apachify(o.to_s[4..-1])}"
-              else
-                apachify(o)
-              end
-            else
-              apachify(o)
-          end
-        end
-
-        self << "#{tag} #{opt * " "}"
+        self << "#{tag} #{opt.collect(&:optionify) * " "}"
       end
   end
 end

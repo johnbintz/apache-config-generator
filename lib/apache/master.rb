@@ -8,6 +8,12 @@ module Apache
       @config += Modules.build(*modules, &block)
     end
 
+    # Listen on network interfaces and ports
+    #
+    # Each provided parameter generates a new Listen line:
+    #  listen "1.2.3.4:80", "2.3.4.5:80" #=>
+    #    Listen "1.2.3.4:80"
+    #    Listen "2.3.4.5:80"
     def listen(*opt)
       opt.each { |o| self << "Listen #{quoteize(o)}" }
     end
