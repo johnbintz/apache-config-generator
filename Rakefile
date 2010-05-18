@@ -43,5 +43,5 @@ Rake::RDocTask.new do |rdoc|
 end
 
 task :reek do
-  system('reek lib/*')
+  system('reek -c config/config.reek lib/*')
 end

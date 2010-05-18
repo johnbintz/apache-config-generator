@@ -19,11 +19,16 @@ module Apache
     [ :custom, :error, :script, :rewrite ].each do |type|
       class_eval <<-EOT
         def #{type}_log(*opts)
-          handle_log '#{type.to_s.capitalize}Log', opts.first, opts.first.quoteize, opts[1..-1]
+          handle_log :tag => '#{type.to_s.capitalize}Log',
+                     :path => opts.first,
+                     :additional_options => opts[1..-1]
         end
 
         def rotate_#{type}_log(*opts)
-          handle_log '#{type.to_s.capitalize}Log', opts.first, rotatelogs(*opts[0..1]).quoteize, opts[2..-1]
+          handle_log :tag => '#{type.to_s.capitalize}Log',
+                     :path => opts.first,
+                     :real_path => rotatelogs(*opts[0..1]),
+                     :additional_options => opts[2..-1]
         end
       EOT
     end
@@ -37,9 +42,12 @@ module Apache
     end
 
     private
-      def handle_log(tag, path, real_path, *opts)
-        writable? path
-        self << "#{tag} #{[real_path, opts].flatten * " "}"
+      def handle_log(info)
+        writable? (path = info[:path])
+
+        real_path = (info[:real_path] || path).quoteize
+
+        self << "#{info[:tag]} #{[real_path, info[:additional_options]].flatten * " "}"
       end
   end
 end

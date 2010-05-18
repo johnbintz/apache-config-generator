@@ -170,23 +170,11 @@ module Apache
   module RegularExpressionMatcher
     # Test this rewritable thing
     def test(from, opts = {})
-      from = from.gsub(@from, @to.gsub(/\$([0-9])/) { |match| '\\' + $1 })
-      replace_placeholders(from, opts)
+      from.gsub(@from, @to.gsub(/\$([0-9])/) { |match| '\\' + $1 }).replace_placeholderize(opts)
     end
 
     def match?(from, opts = {})
-      replace_placeholders(from, opts)[@from]
-    end
-
-    # Replace the placeholders in this rewritable thing
-    def replace_placeholders(string, opts)
-      opts.each do |opt, value|
-        case value
-          when String
-            string = string.gsub('%{' + opt.to_s.upcase + '}', value)
-        end
-      end
-      string.gsub(%r{%\{[^\}]+\}}, '')
+      from.replace_placeholderize(opts)[@from]
     end
   end
 
@@ -203,6 +191,8 @@ module Apache
     end
 
     def rule(from, to)
+      raise "from must be a Regexp" if (!from.kind_of?(Regexp) && require_regexp?)
+
       @from = from
       @to = to
     end
@@ -217,6 +207,7 @@ module Apache
 
     def stop_if_match?; false; end
     def forbidden?; false; end
+    def require_regexp?; false; end
   end
 
   # A RewriteRule definition
@@ -235,33 +226,23 @@ module Apache
     # Define the rule, passing in additional options
     #
     # rule %r{^/here}, '/there', { :last => true, :preserve_query_string => true }
+    #
+    # Options for the options hash are:
+    # * :last => true #=> [L]
+    # * :forbidden => true #=> [F]
+    # * :no_escape => true #=> [NE]
+    # * :redirect => true #=> [R]
+    # * :redirect => 302 #=> [R=302]
+    # * :pass_through => true #=> [PT]
+    # * :preserve_query_string => true #=> [QSA]
+    # * :query_string_append => true #=> [QSA]
+    # * :env => 'what' #=>  [E=what]
     def rule(from, to, options = {})
       super(from, to)
 
-      raise "from must be a Regexp" if !from.kind_of?(Regexp)
-
       @input_options = options
 
-      options = options.collect do |key, value|
-        case key
-          when :last
-            'L'
-          when :forbidden
-            'F'
-          when :no_escape
-            'NE'
-          when :redirect
-            (value == true) ? 'R' : "R=#{value}"
-          when :pass_through
-            'PT'
-          when :preserve_query_string, :query_string_append
-            'QSA'
-          when :env
-            "E=#{value}"
-        end
-      end.compact.sort
-
-      @options = !options.empty? ? "[#{options * ','}]" : nil
+      @options = options.rewrite_rule_optionify.rewrite_option_listify
     end
 
     # Add a RewriteCondition to this RewriteRule
@@ -287,22 +268,17 @@ module Apache
 
       result = super(from, opts) if match?(from, opts)
 
-      replace_placeholders(result, opts)
+      result.replace_placeholderize(opts)
     end
 
     def match?(from, opts = {})
       opts[:request_uri] = from
-      ok = true
 
-      @conditions.each do |c|
-        ok = false if !c.test(from, opts)
+      @conditions.each do |cond|
+        return false if !cond.test(from, opts)
       end
 
-      if ok
-        super(from, opts)
-      else
-        false
-      end
+      super(from, opts)
     end
 
     def stop_if_match?
@@ -312,25 +288,32 @@ module Apache
     def forbidden?
       @input_options[:forbidden]
     end
+
+    def require_regexp?; true; end
   end
 
   # A permanent RedirectMatch
   class RedirectMatchPermanent < MatchableThing
     include RegularExpressionMatcher
 
+    # The Apache directive for this object.
     def tag; 'RedirectMatch permanent'; end
 
+    # Define a RedirectMatch rule.
     def rule(from, to)
       super(from, to)
 
       raise "from must be a Regexp" if !from.kind_of?(Regexp)
     end
 
+    # Convert this tag to a String.
     def to_s
       "#{tag} #{[@from.source, @to].quoteize.compact.flatten * " "}"
     end
 
+    # Stop rewrite testing if this object matches.
     def stop_if_match; true; end
+    def require_regexp?; true; end
   end
 
   # A RewriteCond
@@ -343,30 +326,26 @@ module Apache
     #
     #  rule "%{REQUEST_FILENAME}", "^/here", :case_insensitive #=>
     #    RewriteCond "%{REQUEST_FILENAME}" "^/here" [NC]
+    #
+    # Additional parameters can include the following:
+    # * :or #=> [OR]
+    # * :case_insensitive #=> [NC]
+    # * :no_vary #=> [NV]
     def rule(from, to, *opts)
       super(from, to)
 
-      options = opts.collect do |opt|
-        case opt
-          when :or
-            'OR'
-          when :case_insensitive
-            'NC'
-          when :no_vary
-            'NV'
-        end
-      end
-
-      @options = (!options.empty?) ? "[#{options * ','}]" : nil
+      @options = opts.rewrite_cond_optionify.rewrite_option_listify
     end
 
     alias :cond :rule
 
+    # Create a new RewriteCond
     def initialize
       super
       @options = nil
     end
 
+    # Convert this tag to a String.
     def to_s
       "#{tag} #{[@from.quoteize, @to.quoteize, @options].compact.flatten * " "}"
     end
@@ -374,7 +353,7 @@ module Apache
     # Test this RewriteCond
     def test(from, opts = {})
       super(from, opts)
-      source = replace_placeholders(@from, opts)
+      source = @from.replace_placeholderize(opts)
 
       to = @to
       reverse = false

@@ -23,9 +23,9 @@ module Apache
     #  runner('www', 'www-data') #=>
     #    User www
     #    Group www-data
-    def runner(user, group = nil)
+    def runner(user, group)
       user! user
-      group! group if group
+      group! group
     end
 
     # Enable Passenger on this server
@@ -94,14 +94,7 @@ module Apache
     #  Header set "Content-dispoaition" "attachment" env=only-for-downloads
     def set_header(hash)
       hash.each do |key, value|
-        output = "Header set #{key.quoteize}"
-        case value
-          when String, Symbol
-            output += " #{value.quoteize}"
-          when Array
-            output += " #{value.first.quoteize} #{value.last}"
-        end
-        self << output
+        self << "Header set #{key.quoteize} #{value.headerize}"
       end
     end
 

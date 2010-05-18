@@ -1,0 +1,4 @@
+---
+FeatureEnvy:
+  exclude:
+    - Apache::Logging#handle_log

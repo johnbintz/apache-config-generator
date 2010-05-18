@@ -36,6 +36,17 @@ class String
   end
 
   alias :blockify :quoteize
+
+  def headerize
+    "#{self.quoteize}"
+  end
+
+  def replace_placeholderize(opts)
+    self.gsub(%r{%\{([^\}]+)\}}) do |match|
+      key = $1.downcase.to_sym
+      opts[key] || ''
+    end
+  end
 end
 
 # Ruby symbols
@@ -55,6 +66,10 @@ class Symbol
 
   def blockify
     self.to_s
+  end
+
+  def headerize
+    "#{self.quoteize}"
   end
 end
 
@@ -84,4 +99,44 @@ class Array
   end
 
   alias :commentize :to_a
+
+  def headerize
+    "#{self.first.quoteize} #{self.last}"
+  end
+
+  def rewrite_cond_optionify
+    self.collect do |opt|
+      {
+        :or => 'OR',
+        :case_insensitive => 'NC',
+        :no_vary => 'NV'
+      }[opt]
+    end
+  end
+
+  def rewrite_option_listify
+    (!self.empty?) ? "[#{self * ','}]" : nil
+  end
+end
+
+# Ruby hashes
+class Hash
+  REWRITE_RULE_CONDITIONS = {
+    :last => 'L',
+    :forbidden => 'F',
+    :no_escape => 'NE',
+    :redirect => lambda { |val| val == true ? 'R' : "R=#{val}" },
+    :pass_through => 'PT',
+    :preserve_query_string => 'QSA',
+    :query_string_append => 'QSA',
+    :env => lambda { |val| "E=#{val}" }
+  }
+
+  def rewrite_rule_optionify
+    self.collect do |key, value|
+      what = REWRITE_RULE_CONDITIONS[key]
+      what = what.call(value) if what.kind_of? Proc
+      what
+    end.compact.sort
+  end
 end
