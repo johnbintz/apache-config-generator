@@ -265,12 +265,16 @@ module Apache
       @conditions << rewrite_cond
     end
 
+    def initial_blank!
+      @conditions.empty ? nil : ''
+    end
+
     def to_s
       "#{tag} #{[@from.source.quoteize, @to.quoteize, @options].compact.flatten * " "}"
     end
 
     def to_a
-      [ ('' if !@conditions.empty?), @conditions.collect(&:to_s), super ].flatten
+      [ intial_blank!, @conditions.collect(&:to_s), super ].flatten
     end
 
     # Test this RewriteRule, ensuring the RewriteConds also match
