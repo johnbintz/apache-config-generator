@@ -14,4 +14,12 @@ describe Apache::Apachify, "extends objects to apachify themselves" do
       input.apachify.should == output
     end
   end
+
+  it "should optionify the symbol" do
+    [
+      [ :not_multiviews, '-Multiviews' ]
+    ].each do |symbol, output|
+      symbol.optionify.should == output
+    end
+  end
 end

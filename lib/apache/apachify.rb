@@ -56,7 +56,7 @@ class Symbol
   # Turn this into an option for IndexOptions
   def optionify
     output = self.apachify
-    output = "-#{output[4..-1].apachify}" if self.to_s[0..3] == 'not_'
+    output = "-#{output[3..-1]}" if self.to_s[0..3] == 'not_'
     output
   end
 
