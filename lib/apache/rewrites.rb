@@ -34,8 +34,10 @@ module Apache
     #
     #  r301 '/here', '/there' #=> Redirect permanent "/here" "/there"
     def r301(*opt)
-      if opt.first && !opt.first.kind_of?(::String)
-        raise "First parameter should be a String. Did you mean to wrap this in a rewrites block? #{opt.first}"
+      if first = opt.first
+        if !first.kind_of?(::String)
+          raise "First parameter should be a String. Did you mean to wrap this in a rewrites block? #{first}"
+        end
       end
       self << "Redirect permanent #{opt.quoteize * " "}"
     end
