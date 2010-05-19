@@ -73,10 +73,8 @@ class Symbol
   end
 end
 
-# Ruby everything
-class Object
-  alias :quoteize :to_s
-  alias :blockify :to_s
+class Fixnum
+  def quoteize; self; end
 end
 
 # Ruby arrays
