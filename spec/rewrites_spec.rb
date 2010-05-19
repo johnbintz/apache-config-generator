@@ -88,6 +88,10 @@ describe Apache::RewriteRule, "a RewriteRule" do
   it "should not the test" do
     subject.test('/test', :request_filename => 'test').should == '/test2'
   end
+
+  it "should fail if opts is not provided" do
+    lambda { subject.match?('test', nil) }.should raise_error
+  end
 end
 
 describe Apache::RewriteCondition, "a RewriteCond" do

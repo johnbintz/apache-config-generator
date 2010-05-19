@@ -266,7 +266,7 @@ module Apache
     end
 
     def initial_blank!
-      @conditions.empty ? nil : ''
+      @conditions.empty? ? nil : ''
     end
 
     def to_s
@@ -274,11 +274,12 @@ module Apache
     end
 
     def to_a
-      [ intial_blank!, @conditions.collect(&:to_s), super ].flatten
+      [ initial_blank!, @conditions.collect(&:to_s), super ].flatten
     end
 
     # Test this RewriteRule, ensuring the RewriteConds also match
     def test(from, opts = {})
+      ensure_opts!(opts)
       opts[:request_uri] = from
       result = from
 
@@ -287,7 +288,13 @@ module Apache
       result.replace_placeholderize(opts)
     end
 
+    def ensure_opts!(opts)
+      raise "Options must be a hash" if !opts
+      raise "Options must be a hash" if !opts.kind_of? ::Hash
+    end
+
     def match?(from, opts = {})
+      ensure_opts!(opts)
       opts[:request_uri] = from
 
       @conditions.each do |cond|
