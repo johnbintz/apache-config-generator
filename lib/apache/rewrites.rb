@@ -9,7 +9,7 @@ module Apache
     #    RewriteEngine on
     #    RewriteLogLevel 1
     def enable_rewrite_engine(options = {})
-      self << ''
+      blank_line!
       rewrite_engine! :on
       options.each do |option, value|
         case option
@@ -17,7 +17,7 @@ module Apache
             rewrite_log_level! value
         end
       end
-      self << ''
+      blank_line!
     end
 
     # Pass the block to RewriteManager.build
@@ -49,30 +49,34 @@ module Apache
       # Reset the current list of rewrites
       def reset!
         @rewrites = []
+        @any_tests = false
+        @needs_tests = false
       end
 
       # Build rewritable things from the provided block
       def build(*opt, &block)
         reset!
 
-        @any_tests = false
-        @needs_tests = false
         self.instance_eval(&block)
 
-        name = opt.first || (@rewrites.empty? ? 'unnamed block' : "#{@rewrites.first.from} => #{@rewrites.first.to}")
+        name = block_name(opt.first)
 
-        if !@any_tests && !@rewrites.empty?
-          puts "  [#{"rewrite".foreground(:blue)}] no tests found for #{name}"
-        end
+        show_messages! name
 
-        if @needs_tests
-          puts "  [#{"rewrite".foreground(:blue)}] #{name} needs more tests"
-        end
+        [ "# #{name}", @rewrites.collect(&:to_a) ].flatten
+      end
 
-        output = @rewrites.collect(&:to_a).flatten
-        output.unshift("# #{name}") if opt.first
+      def block_name(first)
+        first_rewrite = @rewrites.first
 
-        output
+        first || (@rewrites.empty? ? 'unnamed block' : "#{first_rewrite.from} => #{first_rewrite.to}")
+      end
+
+      def show_messages!(name)
+        blue = "rewrite".foreground(:blue)
+
+        puts "  [#{blue}] no tests found for #{name}" if !@any_tests && !@rewrites.empty?
+        puts "  [#{blue}] #{name} needs more tests" if @needs_tests
       end
 
       # Commit the latest rewritable thing to the list of rewrites
@@ -122,19 +126,18 @@ module Apache
       def rewrite_test(from, to, opts = {})
         @any_tests = true
         orig_from = from.dup
-        @rewrites.each do |r|
-          pre_from = from.dup
-          if r.match?(from, opts)
-            from = r.test(from, opts)
-            from = pre_from if (r.to == '-')
-            from = :http_forbidden if (r.forbidden?)
-            break if r.stop_if_match?
+        @rewrites.each do |rewrite|
+          if rewrite.match?(from, opts)
+            from = rewrite.from_tester(from, opts)
+            break if rewrite.stop_if_match?
           end
         end
 
         if from != to
-          puts "  [#{"rewrite".foreground(:blue)}] #{orig_from} >> #{to} failed!"
-          puts "  [#{"rewrite".foreground(:blue)}] Result: #{from}"
+          [ "#{orig_from} >> #{to} failed!", "Result: #{from}"
+          ].each do |line|
+            puts "  [#{"rewrite".foreground(:blue)}] #{line}"
+          end
         end
       end
 
@@ -208,6 +211,13 @@ module Apache
     def stop_if_match?; false; end
     def forbidden?; false; end
     def require_regexp?; false; end
+
+    def from_tester(from, opts)
+      from = test(from, opts)
+      from = @from if (@to == '-')
+      from = :http_forbidden if (forbidden?)
+      from
+    end
   end
 
   # A RewriteRule definition
@@ -350,20 +360,23 @@ module Apache
       "#{tag} #{[@from.quoteize, @to.quoteize, @options].compact.flatten * " "}"
     end
 
+    def inverse_result?
+      @to[0..0] == '!'
+    end
+
+    def actual_to
+      to = @to
+      to = to[1..-1] if inverse_result?
+      to
+    end
+
     # Test this RewriteCond
     def test(from, opts = {})
       super(from, opts)
       source = @from.replace_placeholderize(opts)
 
-      to = @to
-      reverse = false
+      to = actual_to
 
-      if @to[0..0] == '!'
-        reverse = true
-        to = @to[1..-1]
-      end
-
-      result = false
       case to
         when '-f'
           result = opts[:files].include?(source) if opts[:files]
@@ -371,7 +384,7 @@ module Apache
           result = source[Regexp.new(to)]
       end
 
-      reverse ? !result : result
+      inverse_result? ? !result : result
     end
   end
 end
