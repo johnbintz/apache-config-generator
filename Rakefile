@@ -1,6 +1,7 @@
 $LOAD_PATH << 'lib'
 
 require 'rubygems'
+require 'yaml'
 
 require 'apache'
 require 'spec/rake/spectask'
