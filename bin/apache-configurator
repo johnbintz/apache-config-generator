@@ -2,7 +2,12 @@
 
 require 'fileutils'
 
-if File.directory? ARGV[0]
+if !ARGV[0]
+	puts "Directory name required."
+	exit 1
+end
+
+if File.directory?(ARGV[0])
 	puts "You can't overwrite an existing directory."
 	exit 1
 end
