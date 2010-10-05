@@ -1,3 +1,5 @@
+v0.2.4. Support proxy RewriteRule option.
+
 v0.2.3. Small updates to Rake tasks.
 
 v0.2.2.1. Fix another stupid bug, yanking old version.
