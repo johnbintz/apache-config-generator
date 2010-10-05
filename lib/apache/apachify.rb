@@ -127,6 +127,7 @@ class Hash
     :pass_through => 'PT',
     :preserve_query_string => 'QSA',
     :query_string_append => 'QSA',
+    :proxy => 'P',
     :env => lambda { |val| "E=#{val}" }
   }
 
