@@ -7,10 +7,10 @@ describe Apache::Config, "performance settings" do
   it "should set keepalive" do
     apache.activate_keepalive({ :timeout => 10, :requests => 100 })
 
-    apache.to_a.should == [
+    apache.to_a.sort.should == [
       'KeepAlive On',
-      'MaxKeepAliveRequests 100',
-      'KeepAliveTimeout 10'
+      'KeepAliveTimeout 10',
+      'MaxKeepAliveRequests 100'
     ]
   end
 end
