@@ -1,7 +1,9 @@
 gem 'rainbow'
-
-group :test do
-	gem 'rspec'
-	gem 'autotest'
-	gem 'mocha'
-end
+gem 'echoe'
+gem 'rspec'
+gem 'autotest'
+gem 'mocha'
+gem 'reek'
+gem 'sdoc'
+gem 'sdoc-helpers', :require => 'sdoc_helpers'
+gem 'rdiscount'

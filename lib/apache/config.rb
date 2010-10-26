@@ -4,6 +4,7 @@ require 'bundler'
 Bundler.require(:default)
 
 require 'fileutils'
+require 'rainbow'
 
 Dir[File.join(File.dirname(__FILE__), '*.rb')].each { |f| require f }
 

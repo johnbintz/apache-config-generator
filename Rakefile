@@ -1,13 +1,15 @@
+require 'rubygems'
+require 'bundler'
+
+Bundler.require(:default)
+
 $LOAD_PATH << 'lib'
 
-require 'rubygems'
 require 'yaml'
 
 require 'apache'
-require 'spec/rake/spectask'
-require 'sdoc'
+require 'rspec/core/rake_task'
 require 'sdoc_helpers/markdown'
-require 'echoe'
 
 namespace :apache do
   desc "Generate the configs"
@@ -28,11 +30,11 @@ end
 
 namespace :spec do
   desc "Run RCov tests"
-  Spec::Rake::SpecTask.new('rcov') do |t|
-    t.spec_files = FileList['spec/*.rb']
+  RSpec::Core::RakeTask.new(:rcov) do |t|
+    t.pattern = 'spec/*.rb'
     t.rcov = true
     t.rcov_opts = ['--exclude', 'spec', '--exclude', 'gems']
-    t.spec_opts = ['-b']
+    t.rspec_opts = ['-b']
   end
 end
 

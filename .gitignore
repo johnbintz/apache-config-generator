@@ -6,5 +6,6 @@ pkg/*
 Manifest
 *.gemspec
 tmp/*
+.bundle/*
 
 

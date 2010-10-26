@@ -1,8 +1,9 @@
+Bundler.require(:default)
+
 require 'fileutils'
 require 'yaml'
 require 'apache/config'
 require 'apache/rake/create'
-require 'rainbow'
 
 CONFIG = Hash[YAML.load_file('config.yml').collect { |k,v| [ k.to_sym, v ] }]
 
@@ -14,17 +15,29 @@ def get_environments
   }.flatten.uniq.sort.collect { |name| name[1..-1] }
 end
 
+def get_default_environment
+  File.read('.environment').strip rescue nil
+end
+
+def need_environment
+  puts "You need to specify an environment. Available environments:"
+  puts
+  puts get_environments.collect { |env| "rake apache:create[#{env}]" } * "\n"
+  puts
+  puts "Additionally, you can set a default environment for this server:"
+  puts
+  puts "rake apache:default[#{get_environments.first}]"
+  exit 1
+end
+
+task :default => 'apache:create'
+
 namespace :apache do
   desc "Create all defined configs for the specified environment"
   task :create, :environment do |t, args|
-    if !args[:environment]
-      puts "You need to specify an environment. Available environments:"
-      puts
-      puts get_environments.collect { |env| "rake apache:create[#{env}]" } * "\n"
-      exit 1
-    end
+    need_environment if !args[:environment] && !get_default_environment
 
-    APACHE_ENV = (args[:environment] || 'production').to_sym
+    APACHE_ENV = (args[:environment] || get_default_environment).to_sym
 
     CONFIG[:source_path] = File.expand_path(CONFIG[:source])
     CONFIG[:dest_path] = File.expand_path(CONFIG[:destination])
@@ -43,5 +56,18 @@ namespace :apache do
   desc "List all possible environments"
   task :environments do
     puts get_environments * "\n"
+  end
+
+  desc "Set the default environment (currently #{get_default_environment || 'nil'})"
+  task :default, :environment do |t, args|
+    need_environment if !args[:environment]
+
+    if get_environments.include?(args[:environment])
+      File.open('.environment', 'w') { |fh| fh.puts args[:environment] }
+      puts "Calls to apache:create will now use #{args[:environment]} when you don't specify the environment."
+    else
+      puts "You need to specify a valid default environment. Here are the possibilities:"
+      Rake::Task['apache:environments'].invoke
+    end
   end
 end
