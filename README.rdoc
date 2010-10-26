@@ -9,7 +9,15 @@ Programmatically construct your Apache configuration using a powerful DSL built 
 == Usage
 
 Run <tt>apache-configurator <directory></tt> to create a new directory to hold your config files.
-A Rakefile and config.yml file will also be generated.
+A Rakefile, Gemfile, and config.yml file will also be generated.
+
+=== Rakefile tasks
+
+Apache Config Generator defines several tasks for managing Apache config files:
+
+* apache:create[environment] creates your config files for the specified environment
+* apache:environments lists all possible environments that can be generated
+* apache:default[environment] sets a default environment to use with a parameter-less apache:create (or the default rake task)
 
 == Building a config file
 
