@@ -1,3 +1,5 @@
+v0.2.5.2. Make it work as standalone w/o Bundler.
+
 v0.2.5.1. Bad release, forgot to add files.
 
 v0.2.5. New option for default environments.
