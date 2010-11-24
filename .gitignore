@@ -7,5 +7,6 @@ Manifest
 *.gemspec
 tmp/*
 .bundle/*
+.DS_Store
 
 

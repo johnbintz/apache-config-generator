@@ -1,9 +1,4 @@
-gem 'rainbow'
-gem 'echoe'
-gem 'rspec'
-gem 'autotest'
-gem 'mocha'
-gem 'reek'
-gem 'sdoc'
-gem 'sdoc-helpers', :require => 'sdoc_helpers'
-gem 'rdiscount'
+source :rubygems
+
+gemspec
+
