@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'apache/config'
 
 describe Apache::Config, "logging directives" do
   let(:apache) { Apache::Config }

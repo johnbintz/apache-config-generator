@@ -108,3 +108,11 @@ describe Apache::Config, "builds configurations" do
     apache.to_a.should == [ '', '<LocationMatch "^/$">', '  MyTest', '</LocationMatch>', '' ]
   end
 end
+
+describe "Apache::Config used separately" do
+  context "it works" do
+    subject { Apache::Config.build_and_return { this_works }.first }
+
+    it { should == "ThisWorks" }
+  end
+end
