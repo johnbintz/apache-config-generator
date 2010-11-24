@@ -8,5 +8,6 @@ Manifest
 tmp/*
 .bundle/*
 .DS_Store
+*.gem
 
 

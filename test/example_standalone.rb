@@ -1,9 +1,7 @@
 #!/usr/bin/ruby
 
 require 'rubygems'
-gem 'apache-config'
+gem 'apache-config-generator'
 require 'apache/config'
 
-puts Apache::Config.build_and_return do
-  this_works
-end
+puts Apache::Config.build_and_return { this_works }
