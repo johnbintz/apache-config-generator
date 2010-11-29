@@ -1,7 +1,9 @@
 require 'fileutils'
 require 'rainbow'
 
-Dir[File.join(File.dirname(__FILE__), '*.rb')].each { |f| require f }
+%w{apachify directory logging master modules mpm_prefork performance permissions rewrites ssl}.each do |file|
+  require "apache/#{file}"
+end
 
 module Apache
   # The core class of Apache Config Generator.
@@ -66,7 +68,7 @@ module Apache
 
       # Build the provided configuration only if the current environment matches one of the conditions
       def build_if(target, *conditions, &block)
-        build(target, &block) if conditions.include? APACHE_ENV
+        build(target, &block) if environment_ok?(*conditions)
       end
 
       # Build the provided configuration
@@ -79,7 +81,12 @@ module Apache
       end
 
       def build_and_return_if(*conditions, &block)
-        build_and_return(&block) if conditions.include? APACHE_ENV
+        build_and_return(&block) if environment_ok?(*conditions)
+      end
+
+      def environment_ok?(*environments)
+        return true if APACHE_ENV == true
+        environments.include?(APACHE_ENV)
       end
 
       def build(target, &block)

@@ -11,6 +11,28 @@ describe Apache::Config, "builds configurations" do
     Object.send(:const_set, :APACHE_ENV, env)
   end
 
+  describe '.environment_ok?' do
+    subject { Apache::Config.environment_ok?(:good) }
+
+    context 'empty environment' do
+      before { set_apache_env(true) }
+
+      it { should be_true }
+    end
+
+    context 'bad environment' do
+      before { set_apache_env(:bad) }
+
+      it { should be_false }
+    end
+
+    context 'good environment' do
+      before { set_apache_env(:good) }
+
+      it { should be_true }
+    end
+  end
+
   it "should handle indent" do
     apache.line_indent = 1
 
