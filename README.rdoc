@@ -27,7 +27,7 @@ Configs center around the Apache::Config.build method:
     server_name 'my-cool-website.cool.wow'
     document_root '/var/www/my-cool-website'
 
-		server_admin! "john@coswellproductions.com"
+    server_admin! "john@coswellproductions.com"
 
     directory '/' do
       options :follow_sym_links, :indexes
@@ -42,12 +42,12 @@ Configs center around the Apache::Config.build method:
     end
 
     rewrites "My old content" do
-    	cond "%{HTTP_REFERER}", '!^my-cool-website\.cool\.wow$'
-    	rule %r{\.(gif|jpg|png|pdf)$}, '/lol-image-stealer.html', :last => true, :redirect => true
+      cond "%{HTTP_REFERER}", '!^my-cool-website\.cool\.wow$'
+      rule %r{\.(gif|jpg|png|pdf)$}, '/lol-image-stealer.html', :last => true, :redirect => true
 
-    	rewrite_test '/index.html', '/index.html', :http_referer => 'other.site'
-    	rewrite_test '/index.gif', '/lol-image-stealer.html', :http_referer => 'other.site'
-    	rewrite_test '/index.gif', '/index.gif', :http_referer => 'my-cool-website.cool.wow'
+      rewrite_test '/index.html', '/index.html', :http_referer => 'other.site'
+      rewrite_test '/index.gif', '/lol-image-stealer.html', :http_referer => 'other.site'
+      rewrite_test '/index.gif', '/index.gif', :http_referer => 'my-cool-website.cool.wow'
     end
   end
 
@@ -58,7 +58,7 @@ Notes on how the conversion works:
 * Directives that expect regular expressions take a Regexp object.
 * Passing a String as a parameter, by default, double-quotes it.
 * Passing in a Symbol does not quote the parameter.
-** Some directives NerdCap Symbols, such as Options
+  * Some directives NerdCap Symbols, such as Options
 * Appending an exclamation point to the method turns off quoting.
 * Shortcut methods are defined as modules under the Apache module.
 
@@ -71,23 +71,28 @@ There are also sanity checks that occur when configuration is being generated:
 
 The above config is transformed into the following:
 
-	ServerName "my-cool-website.cool.wow"
-	DocumentRoot "/var/www/my-cool-website"
-	ServerAdmin john@coswellproductions.com
+  ServerName "my-cool-website.cool.wow"
+  DocumentRoot "/var/www/my-cool-website"
+  ServerAdmin john@coswellproductions.com
 
-	<Directory "/">
-		Options FollowSymLinks, Indexes
-		Allow from all
-	</Directory>
+  <Directory "/">
+    Options FollowSymLinks, Indexes
+    Allow from all
+  </Directory>
 
-	<LocationMatch "^/secret">
-		Deny from all
+  <LocationMatch "^/secret">
+    Deny from all
 
-		AuthType Basic
-		AuthName "My secret"
-		AuthUserFile "/etc/apache2/users/global.users"
-		Require user john
-	</LocationMatch>
+    AuthType Basic
+    AuthName "My secret"
+    AuthUserFile "/etc/apache2/users/global.users"
+    Require user john
+  </LocationMatch>
 
-	RewriteCond "%{HTTP_REFERER}" "^!my-cool-website\.cool\.wow"
-	RewriteRule "\.(gif|jpg|png|pdf)$" "/lol-image-stealer.html" [L,R]
+  RewriteCond "%{HTTP_REFERER}" "^!my-cool-website\.cool\.wow"
+  RewriteRule "\.(gif|jpg|png|pdf)$" "/lol-image-stealer.html" [L,R]
+
+== Using Apache::Config separately
+
+Include the gem and access the methods on Apache::Config directly. See test/example_standalone.rb
+for an example.
