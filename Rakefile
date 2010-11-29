@@ -6,8 +6,7 @@ Bundler.require(:default)
 $LOAD_PATH << 'lib'
 
 require 'yaml'
-
-require 'apache'
+require 'apache/config'
 
 namespace :apache do
   desc "Generate the configs"
