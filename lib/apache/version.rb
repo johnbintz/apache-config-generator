@@ -1,3 +1,3 @@
 module Apache
-  VERSION = '0.2.5.2'
+  VERSION = '0.2.6'
 end
