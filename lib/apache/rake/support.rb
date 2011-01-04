@@ -30,6 +30,23 @@ module Apache
         puts "rake apache:default[#{get_environments.first}]"
         exit 1
       end
+
+      def symlink_configs!
+        raise Errno::ENOENT if !File.directory?(config[:destination_path])
+
+        FileUtils.rm_rf(config[:symlink_path])
+        FileUtils.mkdir_p(config[:symlink_path])
+
+        Dir[File.join(config[:destination_path], '**/*')].each do |file|
+          if line = File.read(file).first
+            if !line['# disabled']
+              target = file.gsub(config[:destination_path], config[:symlink_path])
+              FileUtils.mkdir_p(File.split(target).first)
+              FileUtils.ln_sf(file, target)
+            end
+          end
+        end
+      end
     end
   end
 end
