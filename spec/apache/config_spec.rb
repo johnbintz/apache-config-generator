@@ -33,6 +33,32 @@ describe Apache::Config, "builds configurations" do
     end
   end
 
+  describe '.disable_symlink!' do
+    context 'is enabled by default' do
+      it { apache.instance_variable_get(:@is_disabled).should be_false }
+    end
+
+    context 'disable' do
+      before { apache.disable_symlink! }
+
+      it { apache.instance_variable_get(:@is_disabled).should be_true }
+    end
+  end
+
+  describe '.generate_config_file' do
+    subject { apache.generate_config_file(%w{config}) }
+
+    context 'with symlink' do
+      its(:first) { should_not == '# disabled' }
+    end
+
+    context 'without symlink' do
+      before { apache.disable_symlink! }
+
+      its(:first) { should == '# disabled' }
+    end
+  end
+
   it "should handle indent" do
     apache.line_indent = 1
 

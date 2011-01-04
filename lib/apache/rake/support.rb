@@ -5,7 +5,36 @@ module Apache
   module Rake
     module Support
       def config
-        @config ||= Hash[YAML.load_file('config.yml').collect { |k,v| [ k.to_sym, v ] }]
+        if !@config
+          @config = Hash[YAML.load_file('config.yml').collect { |k,v| [ k.to_sym, v ] }]
+          config_paths!
+
+          class << @config
+            def [](which)
+              if which == :dest_path
+                print "config[:dest_path] is deprecated.".foreground(:red).bright
+                puts  " Use config[:destination_path] instead.".foreground(:red)
+
+                self[:destination_path]
+              else
+                super
+              end
+            end
+          end
+        end
+
+        @config
+      end
+
+      def config_paths!
+        [ :source, :destination, :symlink ].each do |which|
+          begin
+            @config[:"#{which}_path"] = File.expand_path(@config[which])
+          rescue StandardError
+            puts "#{which.to_s.bright} is not defined in the configuration file.".foreground(:red)
+            exit 1
+          end
+        end
       end
 
       def get_environments
@@ -37,7 +66,7 @@ module Apache
         FileUtils.rm_rf(config[:symlink_path])
         FileUtils.mkdir_p(config[:symlink_path])
 
-        Dir[File.join(config[:destination_path], '**/*')].each do |file|
+        Dir[File.join(config[:destination_path], '**/*')].find_all { |file| File.file?(file) }.each do |file|
           if line = File.read(file).first
             if !line['# disabled']
               target = file.gsub(config[:destination_path], config[:symlink_path])

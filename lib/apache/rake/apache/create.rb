@@ -16,13 +16,10 @@ namespace :apache do
       APACHE_ENV = (args[:environment] || get_default_environment).to_sym
     end
 
-    config[:source_path] = File.expand_path(config[:source])
-    config[:dest_path] = File.expand_path(config[:destination])
-
     Apache::Config.rotate_logs_path = config[:rotate_logs_path]
 
-    FileUtils.mkdir_p config[:dest_path]
-    Dir.chdir config[:dest_path]
+    FileUtils.mkdir_p config[:destination_path]
+    Dir.chdir config[:destination_path]
 
     # using CONFIG is deprecated
     CONFIG = config
@@ -31,6 +28,8 @@ namespace :apache do
       puts file.foreground(:green)
       require file
     end
+
+    symlink_configs!
   end
 
   desc "List all possible environments"
