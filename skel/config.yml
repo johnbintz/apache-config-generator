@@ -1,3 +1,4 @@
 source:       "source"
-destination:  "conf.d"
+destination:  "conf.d-original"
+symlink:      "conf.d"
 rotate_logs_path: '/path/to/apache/bin/rotatelogs'
