@@ -36,12 +36,14 @@ describe Apache::Config, "builds configurations" do
   describe '.disable_symlink!' do
     context 'is enabled by default' do
       it { apache.instance_variable_get(:@is_disabled).should be_false }
+      it { apache.disabled?.should be_false }
     end
 
     context 'disable' do
       before { apache.disable_symlink! }
 
       it { apache.instance_variable_get(:@is_disabled).should be_true }
+      it { apache.disabled?.should be_true }
     end
   end
 
@@ -110,9 +112,13 @@ describe Apache::Config, "builds configurations" do
   end
 
   it "should handle a build" do
+    apache.written?.should be_false
+
     FileUtils.mkdir_p 'test'
     apache.build('test/fake.conf') { my_test "this" }.should == [ 'MyTest "this"' ]
     FileUtils.rm 'test/fake.conf'
+
+    apache.written?.should be_true
   end
 
   it "should handle building if the environment is correct" do

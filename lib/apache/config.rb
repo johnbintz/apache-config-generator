@@ -94,6 +94,7 @@ module Apache
 
         FileUtils.mkdir_p File.split(target).first
         File.open(target, 'w') { |file| file.puts generate_config_file(config) * "\n" }
+        @was_written = true
 
         config
       end
@@ -101,6 +102,14 @@ module Apache
       # If included in a configuration, will not generate the symlink in the Rake task
       def disable_symlink!
         @is_disabled = true
+      end
+
+      def disabled?
+        @is_disabled
+      end
+
+      def written?
+        @was_written
       end
 
       def generate_config_file(config)
@@ -114,6 +123,7 @@ module Apache
         @config = []
         @line_indent = 0
         @is_disabled = false
+        @was_written = false
       end
 
       # Indent the string by the current @line_indent level

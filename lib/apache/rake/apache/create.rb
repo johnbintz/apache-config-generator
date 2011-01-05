@@ -5,6 +5,15 @@ include Apache::Rake::Support
 
 task :default => 'apache:create'
 
+def capture_stdout
+  buffer = StringIO.new
+  $stdout = buffer
+  yield
+  $stdout = STDOUT
+  buffer.rewind
+  buffer.read
+end
+
 namespace :apache do
   desc "Create all defined configs for the specified environment"
   task :create, :environment do |t, args|
@@ -21,12 +30,22 @@ namespace :apache do
     FileUtils.mkdir_p config[:destination_path]
     Dir.chdir config[:destination_path]
 
-    # using CONFIG is deprecated
     CONFIG = config
 
+    ENVIRONMENT_CONFIG = (config[:environments][APACHE_ENV] rescue nil)
+
     Dir[File.join(config[:source_path], '**', '*.rb')].each do |file|
-      puts file.foreground(:green)
-      require file
+      Apache::Config.reset!
+      output = capture_stdout { require file }
+
+      if Apache::Config.written?
+        if Apache::Config.disabled?
+          puts file.foreground(:blue)
+        else
+          puts file.foreground(:green)
+        end
+        puts output
+      end
     end
 
     symlink_configs!

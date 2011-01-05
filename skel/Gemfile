@@ -1,0 +1,5 @@
+source :rubygems
+
+gem 'apache-config-generator', '>= 0.2.7'
+gem 'rake'
+

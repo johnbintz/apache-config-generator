@@ -1,12 +1,13 @@
 require 'yaml'
 require 'fileutils'
+require 'apache/hash'
 
 module Apache
   module Rake
     module Support
       def config
         if !@config
-          @config = Hash[YAML.load_file('config.yml').collect { |k,v| [ k.to_sym, v ] }]
+          @config = YAML.load_file('config.yml').to_sym_keys
           config_paths!
 
           class << @config

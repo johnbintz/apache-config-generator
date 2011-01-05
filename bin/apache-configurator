@@ -1,17 +1,29 @@
 #!/usr/bin/env ruby
 
 require 'fileutils'
+require 'rubygems'
+require 'rainbow'
 
 if !ARGV[0]
-	puts "Directory name required."
+	puts "Directory name required.".foreground(:red)
 	exit 1
 end
 
 if File.directory?(ARGV[0])
-	puts "You can't overwrite an existing directory."
+	puts "You can't overwrite an existing directory.".foreground(:red)
 	exit 1
 end
 
+puts "Copying skel files...".foreground(:green)
 FileUtils.cp_r File.expand_path(File.join(File.dirname(__FILE__), '..', 'skel')), ARGV[0]
+
+puts "Making config directories...".foreground(:green)
 FileUtils.mkdir_p File.join(ARGV[0], 'source')
+FileUtils.mkdir_p File.join(ARGV[0], 'conf.d-original')
 FileUtils.mkdir_p File.join(ARGV[0], 'conf.d')
+
+print "Complete! ".bright.foreground(:green)
+print "cd #{ARGV[0]}".bright.foreground(:yellow)
+print " and run ".foreground(:green)
+print "bundle exec rake -T ".bright.foreground(:yellow)
+puts "to get started.".foreground(:green)
