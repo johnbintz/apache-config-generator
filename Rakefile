@@ -20,3 +20,9 @@ end
 task :reek do
   system('reek -c config/config.reek lib/*')
 end
+
+task :gem do
+  system %{rm *.gem}
+  system %{gem build apache-config-generator.gemspec}
+  system %{gem install apache-config-generator-*.gem}
+end
