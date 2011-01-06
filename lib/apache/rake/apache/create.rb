@@ -27,6 +27,7 @@ namespace :apache do
 
     Apache::Config.rotate_logs_path = config[:rotate_logs_path]
 
+    FileUtils.rm_rf config[:destination_path]
     FileUtils.mkdir_p config[:destination_path]
     Dir.chdir config[:destination_path]
 
@@ -47,8 +48,6 @@ namespace :apache do
         puts output
       end
     end
-
-    symlink_configs!
   end
 
   desc "List all possible environments"

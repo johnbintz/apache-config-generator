@@ -33,31 +33,37 @@ describe Apache::Config, "builds configurations" do
     end
   end
 
-  describe '.disable_symlink!' do
+  describe '.disable!' do
     context 'is enabled by default' do
       it { apache.instance_variable_get(:@is_disabled).should be_false }
       it { apache.disabled?.should be_false }
+
+      context 'writes config' do
+        before {
+          FileUtils.expects(:mkdir_p).once
+          File.expects(:open).once
+          apache.build("here") { cats }
+        }
+
+        it { apache.written?.should == true }
+      end
     end
 
     context 'disable' do
-      before { apache.disable_symlink! }
+      before { apache.disable! }
 
       it { apache.instance_variable_get(:@is_disabled).should be_true }
       it { apache.disabled?.should be_true }
-    end
-  end
 
-  describe '.generate_config_file' do
-    subject { apache.generate_config_file(%w{config}) }
+      context 'does not write config' do
+        before {
+          FileUtils.expects(:mkdir_p).never
+          File.expects(:open).never
+          apache.build("here") { disable!; cats }
+        }
 
-    context 'with symlink' do
-      its(:first) { should_not == '# disabled' }
-    end
-
-    context 'without symlink' do
-      before { apache.disable_symlink! }
-
-      its(:first) { should == '# disabled' }
+        it { apache.written?.should == false }
+      end
     end
   end
 
