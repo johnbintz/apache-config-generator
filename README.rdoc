@@ -2,6 +2,8 @@
 
 Programmatically construct your Apache configuration using a powerful DSL built in Ruby.
 
+As of version 0.2.7, your destination config directory is destroyed and re-created each time the apache:create Rake task is run.
+
 == Installation
 
 <tt>gem install apache-config-generator</tt>
@@ -91,6 +93,8 @@ The above config is transformed into the following:
 
   RewriteCond "%{HTTP_REFERER}" "^!my-cool-website\.cool\.wow"
   RewriteRule "\.(gif|jpg|png|pdf)$" "/lol-image-stealer.html" [L,R]
+
+The destination configs directory is destroyed and re-created each time the apache:create Rake task is run.
 
 == Using Apache::Config separately
 
