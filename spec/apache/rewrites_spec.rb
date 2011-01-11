@@ -97,14 +97,34 @@ describe Apache::RewriteRule, "a RewriteRule" do
   end
 
   context 'dash' do
-    subject {
-      rule = Apache::RewriteRule.new
-      rule.rule(%r{^/test$}, '-', :last => true)
-      rule
-    }
+    context 'no conditions' do
+      subject {
+        rule = Apache::RewriteRule.new
+        rule.rule(%r{^/test$}, '-', :last => true)
+        rule
+      }
 
-    it "should succeed and return itself" do
-      subject.test('/test').should == '/test'
+      it "should succeed and return itself" do
+        subject.test('/test').should == '/test'
+        subject.test('/fail').should == '/fail'
+      end
+    end
+
+    context 'conditions' do
+      subject do
+        rule = Apache::RewriteRule.new
+        rule.cond('/%{REQUEST_FILENAME}', '^/test$')
+        rule.rule(%r{^/test$}, '-', :last => true)
+        rule
+      end
+
+      it "should fail" do
+        subject.test('/test', :request_filename => 'cats').should == '/test'
+      end
+
+      it "should succeed" do
+        subject.test('/test', :request_filename => 'test').should == '/test'
+      end
     end
   end
 end

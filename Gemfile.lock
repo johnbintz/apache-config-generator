@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    apache-config-generator (0.2.7)
+    apache-config-generator (0.2.8)
       rainbow
 
 GEM

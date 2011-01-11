@@ -216,7 +216,6 @@ module Apache
 
     def from_tester(from, opts)
       from = test(from, opts)
-      from = @from if (@to == '-')
       from = :http_forbidden if (forbidden?)
       from
     end
@@ -284,7 +283,9 @@ module Apache
       result = from
 
       if match?(from, opts)
-        result = super(from, opts) if !(@to == '-')
+        if !(@to == '-')
+          result = super(from, opts)
+        end
       end
 
       result.replace_placeholderize(opts)
