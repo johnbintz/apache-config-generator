@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'apache/config'
 
 describe Apache::Config, "rewrites" do
   let(:apache) { Apache::Config }
@@ -71,26 +72,40 @@ describe Apache::MatchableThing, "something that can be matched" do
 end
 
 describe Apache::RewriteRule, "a RewriteRule" do
-  subject do
-    rule = Apache::RewriteRule.new
-    rule.cond('/%{REQUEST_FILENAME}', '^/test$')
-    rule.rule(%r{^/test$}, '/test2', :last => true, :preserve_query_string => true)
-    rule
+  context 'basic' do
+    subject do
+      rule = Apache::RewriteRule.new
+      rule.cond('/%{REQUEST_FILENAME}', '^/test$')
+      rule.rule(%r{^/test$}, '/test2', :last => true, :preserve_query_string => true)
+      rule
+    end
+
+    its(:to_s) { should == 'RewriteRule "^/test$" "/test2" [L,QSA]' }
+    its(:to_a) { should == [
+      '',
+      'RewriteCond "/%{REQUEST_FILENAME}" "^/test$"',
+      'RewriteRule "^/test$" "/test2" [L,QSA]'
+    ] }
+
+    it "should not the test" do
+      subject.test('/test', :request_filename => 'test').should == '/test2'
+    end
+
+    it "should fail if opts is not provided" do
+      lambda { subject.match?('test', nil) }.should raise_error
+    end
   end
 
-  its(:to_s) { should == 'RewriteRule "^/test$" "/test2" [L,QSA]' }
-  its(:to_a) { should == [
-    '',
-    'RewriteCond "/%{REQUEST_FILENAME}" "^/test$"',
-    'RewriteRule "^/test$" "/test2" [L,QSA]'
-  ] }
+  context 'dash' do
+    subject {
+      rule = Apache::RewriteRule.new
+      rule.rule(%r{^/test$}, '-', :last => true)
+      rule
+    }
 
-  it "should not the test" do
-    subject.test('/test', :request_filename => 'test').should == '/test2'
-  end
-
-  it "should fail if opts is not provided" do
-    lambda { subject.match?('test', nil) }.should raise_error
+    it "should succeed and return itself" do
+      subject.test('/test').should == '/test'
+    end
   end
 end
 

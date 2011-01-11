@@ -283,7 +283,9 @@ module Apache
       opts[:request_uri] = from
       result = from
 
-      result = super(from, opts) if match?(from, opts)
+      if match?(from, opts)
+        result = super(from, opts) if !(@to == '-')
+      end
 
       result.replace_placeholderize(opts)
     end
