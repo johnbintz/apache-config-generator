@@ -4,7 +4,6 @@ coverage/*
 docs/*
 pkg/*
 Manifest
-*.gemspec
 tmp/*
 .bundle/*
 .DS_Store
