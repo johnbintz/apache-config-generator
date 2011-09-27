@@ -1,12 +1,5 @@
-require 'rubygems'
-require 'bundler'
-
-Bundler.require(:default)
-
-$LOAD_PATH << 'lib'
-
 require 'yaml'
-require 'apache/config'
+require 'apache'
 
 namespace :apache do
   desc "Generate the configs"
@@ -26,3 +19,10 @@ task :gem do
   system %{gem build apache-config-generator.gemspec}
   system %{gem install apache-config-generator-*.gem}
 end
+
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new(:spec)
+
+task :default => :spec
+
