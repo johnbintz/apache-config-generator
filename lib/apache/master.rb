@@ -2,6 +2,12 @@ module Apache
   # Options that aren't specific to a particular purpose go here. Once enough like methods for a
   # particular purpose exist, break them out into a separate module.
   module Master
+    class << self
+      def listening_on
+        @listening_on ||= []
+      end
+    end
+
     # Build a module list.
     # Wraps around Modules.build
     def modules(*modules, &block)
@@ -15,7 +21,14 @@ module Apache
     #    Listen "1.2.3.4:80"
     #    Listen "2.3.4.5:80"
     def listen(*opt)
-      opt.each { |adapter| self << "Listen #{adapter.quoteize}" }
+      opt.collect(&:quoteize).each do |adapter|
+        if !Apache::Master.listening_on.include?(adapter)
+          self << "Listen #{adapter}"
+          Apache::Master.listening_on << adapter
+        else
+          $stderr.puts "Multiple Listens for #{adapter}".foreground(:red)
+        end
+      end
     end
     alias :listen! :listen
 

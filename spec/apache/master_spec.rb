@@ -1,4 +1,4 @@
-require 'apache/config'
+require 'spec_helper'
 
 describe Apache::Master, "should provide basic helpers for configuration" do
   let(:apache) { Apache::Config }
@@ -80,5 +80,17 @@ describe Apache::Master, "should provide basic helpers for configuration" do
     apache.set_header :test => :test2
     apache.set_header 'test3' => [ 'test4', "test5=test6" ]
     apache.to_a.should == [ 'Header set test test2', 'Header set "test3" "test4" test5=test6' ]
+  end
+
+  describe '#listen' do
+    it 'should not allow one to listen twice on the same interface' do
+      apache.listen "one"
+      apache.listen "two"
+      apache.listen "one"
+
+      apache.to_a.should == [ 'Listen "one"', 'Listen "two"' ]
+
+      Apache::Master.listening_on.should == %w{"one" "two"}
+    end
   end
 end
