@@ -1,4 +1,4 @@
-require 'apache/config'
+require 'spec_helper'
 
 describe Apache::Master, "should provide basic helpers for configuration" do
   let(:apache) { Apache::Config }

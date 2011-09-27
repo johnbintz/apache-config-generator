@@ -1,6 +1,5 @@
 require 'yaml'
 require 'fileutils'
-require 'apache/hash'
 
 module Apache
   module Rake

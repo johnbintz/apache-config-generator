@@ -1,5 +1,4 @@
-require 'apache/config'
-require 'apache/rake/support'
+require 'apache'
 
 include Apache::Rake::Support
 

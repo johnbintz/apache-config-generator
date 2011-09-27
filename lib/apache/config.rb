@@ -1,10 +1,6 @@
 require 'fileutils'
 require 'rainbow'
 
-%w{apachify directory logging master modules mpm_prefork performance permissions rewrites ssl}.each do |file|
-  require "apache/#{file}"
-end
-
 module Apache
   # The core class of Apache Config Generator.
   #

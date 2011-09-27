@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'apache/apachify'
 
 describe Apache::Apachify, "extends objects to apachify themselves" do
   it "should Apachify the name" do

@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'lib/apache/hash'
 
 describe Hash do
   describe '#to_sym_keys' do

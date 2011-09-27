@@ -1,5 +1,3 @@
-require 'pp'
-
 module Apache
   # Handle the creation of RewriteRules, RewriteConds, Redirects, and RedirectMatches
   module Rewrites

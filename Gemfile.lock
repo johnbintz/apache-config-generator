@@ -7,8 +7,11 @@ PATH
 GEM
   remote: http://rubygems.org/
   specs:
-    autotest (4.4.2)
-    diff-lcs (1.1.2)
+    diff-lcs (1.1.3)
+    guard (0.7.0)
+      thor (~> 0.14.6)
+    guard-rspec (0.4.5)
+      guard (>= 0.4.0)
     mocha (0.9.10)
       rake
     nokogiri (1.4.3.1)
@@ -18,32 +21,31 @@ GEM
       ruby2ruby (~> 1.2)
       ruby_parser (~> 2.0)
       sexp_processor (~> 3.0)
-    rspec (2.0.1)
-      rspec-core (~> 2.0.1)
-      rspec-expectations (~> 2.0.1)
-      rspec-mocks (~> 2.0.1)
-    rspec-core (2.0.1)
-    rspec-expectations (2.0.1)
-      diff-lcs (>= 1.1.2)
-    rspec-mocks (2.0.1)
-      rspec-core (~> 2.0.1)
-      rspec-expectations (~> 2.0.1)
+    rspec (2.6.0)
+      rspec-core (~> 2.6.0)
+      rspec-expectations (~> 2.6.0)
+      rspec-mocks (~> 2.6.0)
+    rspec-core (2.6.4)
+    rspec-expectations (2.6.0)
+      diff-lcs (~> 1.1.2)
+    rspec-mocks (2.6.0)
     ruby2ruby (1.2.4)
       ruby_parser (~> 2.0)
       sexp_processor (~> 3.0)
     ruby_parser (2.0.4)
       sexp_processor (~> 3.0)
     sexp_processor (3.0.4)
+    thor (0.14.6)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   apache-config-generator!
-  autotest
   bundler (>= 1.0.0)
+  guard
+  guard-rspec
   mocha
   nokogiri
-  rainbow
   reek
-  rspec (~> 2.0.0)
+  rspec (~> 2.6.0)

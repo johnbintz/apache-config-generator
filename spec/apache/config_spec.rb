@@ -1,4 +1,4 @@
-require 'apache/config'
+require 'spec_helper'
 require 'fileutils'
 
 describe Apache::Config, "builds configurations" do

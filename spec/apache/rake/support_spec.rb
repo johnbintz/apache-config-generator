@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'apache/rake/support'
 
 describe Apache::Rake::Support do
   include Apache::Rake::Support
