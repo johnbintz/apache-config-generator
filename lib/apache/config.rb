@@ -120,6 +120,10 @@ module Apache
         @line_indent = 0
         @is_disabled = false
         @was_written = false
+
+        Apache.constants.collect { |c| Apache.const_get(c) }.find_all { |c| c != Apache::Config && c.kind_of?(Module) }.each do |mod|
+          mod.reset! if mod.respond_to?(:reset!)
+        end
       end
 
       # Indent the string by the current @line_indent level

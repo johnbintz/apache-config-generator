@@ -11,10 +11,12 @@ describe Apache::Config, "logging directives" do
       apache.reset!
       apache.send("#{type}_log".to_sym, 'test', 'test2')
       apache.to_a.should == [ %{#{type.to_s.capitalize}Log "test" test2} ]
+      Apache::Logging.log_paths[type].should == [ "test" ]
 
       apache.reset!
       apache.send("rotate_#{type}_log".to_sym, 'test', 86400, 'test2')
       apache.to_a.should == [ %{#{type.to_s.capitalize}Log "|/path/to/rotatelogs test 86400" test2} ]
+      Apache::Logging.log_paths[type].should == [ "test" ]
     end
   end
 

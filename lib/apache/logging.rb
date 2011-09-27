@@ -16,19 +16,32 @@ module Apache
   # Both variations check to make sure the log file diretory exists during generation.
   # The rotate_ variations need @rotate_logs_path set to work.
   module Logging
+    class << self
+      def log_paths
+        @log_paths ||= {}
+      end
+
+      def reset!
+        @log_paths = {}
+      end
+    end
+
     [ :custom, :error, :script, :rewrite ].each do |type|
       class_eval <<-EOT
         def #{type}_log(*opts)
           handle_log :tag => '#{type.to_s.capitalize}Log',
                      :path => opts.first,
-                     :additional_options => opts[1..-1]
+                     :additional_options => opts[1..-1],
+                     :type => :#{type}
         end
 
         def rotate_#{type}_log(*opts)
           handle_log :tag => '#{type.to_s.capitalize}Log',
                      :path => opts.first,
                      :real_path => rotatelogs(*opts[0..1]),
-                     :additional_options => opts[2..-1]
+                     :additional_options => opts[2..-1],
+                     :type => :#{type}
+
         end
       EOT
     end
@@ -46,6 +59,8 @@ module Apache
         writable? (path = info[:path])
 
         real_path = (info[:real_path] || path).quoteize
+
+        (Apache::Logging.log_paths[info[:type]] ||= []) << path
 
         self << "#{info[:tag]} #{[real_path, info[:additional_options]].flatten * " "}"
       end
