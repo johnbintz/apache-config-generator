@@ -61,6 +61,7 @@ module Apache
       include Apache::Rewrites
       include Apache::MPM
       include Apache::SSL
+      include Apache::Proxy
 
       # Build the provided configuration only if the current environment matches one of the conditions
       def build_if(target, *conditions, &block)

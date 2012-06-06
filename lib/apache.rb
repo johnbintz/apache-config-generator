@@ -10,6 +10,7 @@ module Apache
   autoload :Rewrites, 'apache/rewrites'
   autoload :SSL, 'apache/ssl'
   autoload :MPM, 'apache/mpm_prefork'
+  autoload :Proxy, 'apache/proxy'
 
   module Rake
     autoload :Support, 'apache/rake/support'

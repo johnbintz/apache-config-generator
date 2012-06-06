@@ -243,6 +243,7 @@ module Apache
     # * :redirect => true #=> [R]
     # * :redirect => 302 #=> [R=302]
     # * :pass_through => true #=> [PT]
+    # * :proxy => true #=> [P]
     # * :preserve_query_string => true #=> [QSA]
     # * :query_string_append => true #=> [QSA]
     # * :env => 'what' #=>  [E=what]
