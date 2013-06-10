@@ -23,17 +23,21 @@ module Apache
       def build(*modules, &block)
         reset!
 
-        modules.each { |mod| self.send(mod) }
+        modules.each { |mod| add_module(mod) }
         self.instance_eval(&block) if block
 
         [ '' ] + @modules + [ '' ]
       end
 
-      # The method name becomes the module core name
-      def method_missing(method, *args)
+      def add_module(method, *args)
         module_name = "#{method}_module"
         module_path = args[0] || "modules/mod_#{method}.so"
         @modules << [ 'LoadModule', *[ module_name, module_path ].quoteize ] * " "
+      end
+
+      # The method name becomes the module core name
+      def method_missing(method, *args)
+        add_module(method, *args)
       end
     end
   end

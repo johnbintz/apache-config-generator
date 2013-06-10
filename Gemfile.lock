@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    apache-config-generator (0.2.8)
+    apache-config-generator (0.2.9)
       rainbow
 
 GEM
@@ -15,7 +15,7 @@ GEM
     mocha (0.9.10)
       rake
     nokogiri (1.4.3.1)
-    rainbow (1.1)
+    rainbow (1.1.4)
     rake (0.8.7)
     reek (1.2.8)
       ruby2ruby (~> 1.2)

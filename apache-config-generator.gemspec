@@ -12,7 +12,6 @@ Gem::Specification.new do |s|
   s.summary = %q{A Ruby DSL for programmatically generating Apache configs}
   s.email = %q{john@coswellproductions.com}
 
-  s.date = Date.today.to_s
   s.files        = `git ls-files`.split("\n")
   s.executables  = `git ls-files`.split("\n").map{|f| f =~ /^bin\/(.*)/ ? $1 : nil}.compact
   s.require_path = 'lib'
